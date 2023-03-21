@@ -1,0 +1,13 @@
+---
+version: '3.9'
+
+name: tmux-focus-plugin
+
+services:
+  tmux:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+    - .:/home/developer/.tmux/plugins/tmux-focus
+
