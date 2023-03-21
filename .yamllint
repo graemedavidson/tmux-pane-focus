@@ -1,0 +1,14 @@
+---
+yaml-files:
+- '*.yaml'
+- '*.yml'
+- .yamllint
+
+extends: default
+
+rules:
+  indentation:
+    level: warning
+    indent-sequences: consistent
+  line-length: disable
+  truthy: disable
