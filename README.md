@@ -45,6 +45,17 @@ Create and move between new panes:
 | `ctrl-a -`                | Create horizontal pane
 | `ctrl-a <DIRECTION_KEY>`  | Move between panes
 
+### Shellspec Tests
+
+Unit tests included through [shellspec](https://shellspec.info/) within a [container](https://hub.docker.com/r/shellspec/shellspec-debian/tags).
+
+- [Tests](./spec/)
+
+```bash
+docker-compose run tests
+docker run -it --rm -v "$PWD:/src" --entrypoint bash shellspec/shellspec-debian:0.28.1
+```
+
 ### Tmux Setup
 
 Tmux configured to use `ctrl-a` as well as other opinionated settings.

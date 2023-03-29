@@ -10,3 +10,9 @@ services:
       dockerfile: Dockerfile
     volumes:
     - .:/home/developer/.tmux/plugins/tmux-pane-focus
+
+  tests:
+    image: shellspec/shellspec-debian:0.28.1
+    volumes:
+    - .:/src
+    command: ["-s", "bash"]
