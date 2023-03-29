@@ -1,5 +1,7 @@
 # tmux pane focus
 
+[![codecov](https://codecov.io/gh/graemedavidson/tmux-pane-focus/branch/main/graph/badge.svg?token=2ULOAGT6BT)](https://codecov.io/gh/graemedavidson/tmux-pane-focus)
+
 Tmux plugin to auto resize panes on focus similar to [nvim Focus](https://github.com/beauwilliams/focus.nvim).
 
 ## Installation
