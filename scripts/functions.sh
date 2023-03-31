@@ -50,6 +50,7 @@ get_split_count() {
 get_settings() {
   split_count="${1}"
   window_size="${2}"
+  active_percentage="${3}"
 
   # ToDo: allow this to set via a user input
   # active_pane_percentage="50"
@@ -62,7 +63,6 @@ get_settings() {
     min_active=$((window_size / (100 / active_percentage)))
     min_inactive=$((window_size / (100 / inactive_percentage)))
   else
-    active_percentage=50
     inactive_percentage=$(( (100 - active_percentage) / split_count ))
     min_active=$((window_size / (100 / active_percentage) - split_count))
     min_inactive=$((window_size / (100 / inactive_percentage)))
