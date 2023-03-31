@@ -133,3 +133,42 @@ EOF
     echo "${debug}"
   fi
 }
+
+# Get a tmux option value
+#
+# checks local setting and if unset checks and then sets global (-g) for inital default setting set
+# in `.tmux.conf`.
+#
+# Parameter(s):
+# - option (string): name of tmux option to get
+#
+# Return(s):
+# - option_val (string): value of tmux setting
+get_tmux_option() {
+  local option="${1}"
+  local default_value="${2}"
+
+  read -r option_value< <(tmux show-options -qv "${option}")
+  if [[ -z "${option_value}" ]]; then
+    # Try global (-g)
+    read -r option_value< <(tmux show-options -gqv "${option}")
+    if [[ -z "${ACTIVE_PERCENTAGE}" ]]; then
+      local option_value="${default_value}"
+    fi
+  fi
+
+  set_tmux_option "${option}" "${option_value}"
+
+  echo "${option_value}"
+}
+
+# Set a tmux option value locally
+#
+# Parameter(s):
+# - option (string): name of tmux option to set
+# - option_value (string): value of tmux option to set
+set_tmux_option() {
+  local option="${1}"
+  local option_value="${2}"
+  tmux set-option "${option}" "${option_value}"
+}

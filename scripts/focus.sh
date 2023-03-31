@@ -10,22 +10,28 @@ if [[ $PANE_COUNT -eq 1 ]]; then
   exit 0
 fi
 
-# Check session and then global (default in .tmux.conf), set session
-read -r ACTIVE_PERCENTAGE< <(tmux show-options -qv "@pane-focus-size")
-if [[ -z "${ACTIVE_PERCENTAGE}" ]]; then
-  read -r ACTIVE_PERCENTAGE< <(tmux show-options -gqv "@pane-focus-size")
-  if [[ -z "${ACTIVE_PERCENTAGE}" ]]; then
-    tmux set-option "@pane-focus-size" "50"
-  else
-    tmux set-option "@pane-focus-size" "${ACTIVE_PERCENTAGE}"
-  fi
-fi
-
+read -r ACTIVE_PERCENTAGE< <(get_tmux_option "@pane-focus-size" "50")
 if [[ "${ACTIVE_PERCENTAGE}" == "off" ]]; then
   exit
 elif [[ "${ACTIVE_PERCENTAGE}" -lt 50 ]] || [[ "${ACTIVE_PERCENTAGE}" -ge 100 ]]; then
   tmux display-message "#[bg=red]Invalid @pane-focus-size setting in .tmux.conf file: ${ACTIVE_PERCENTAGE}; expected value between 50 and 100.#[bg=default]"
   exit
+fi
+
+# Check session and then global (default in .tmux.conf), set session
+read -r DIRECTION< <(get_tmux_option "@pane-focus-direction" "+")
+if [[ ! "${DIRECTION}" =~ (\+|\-|\|) ]]; then
+  tmux display-message "#[bg=red]Invalid @pane-focus-direction setting in .tmux.conf file: ${DIRECTION}; expected value '+', '|', '-'.#[bg=default]"
+  exit
+fi
+
+resize_vertically=true
+resize_horizontally=true
+if [[ "${DIRECTION}" == "-" ]]; then
+  resize_vertically=false
+fi
+if [[ "${DIRECTION}" == "|" ]]; then
+  resize_horizontally=false
 fi
 
 IFS=- read -r WINDOW_HEIGHT WINDOW_WIDTH < <(tmux list-windows -F "#{window_height}-#{window_width}" -f "#{m:1,#{window_active}}")
@@ -48,7 +54,7 @@ debug_log "file" "Window dimensions: H:${WINDOW_HEIGHT} x W:${WINDOW_WIDTH}"
 debug_log "file" "minimum active dimensions: H:${MIN_ACTIVE_HEIGHT} x W:${MIN_ACTIVE_WIDTH}"
 debug_log "file" "minimum inactive dimensions (taking into account number of splits): H:${MIN_INACTIVE_HEIGHT} x W:${MIN_INACTIVE_WIDTH}"
 
-if [[ "${resize_height}" == "true" ]]; then
+if [[ "${resize_horizontally}" == "true" ]] && [[ "${resize_height}" == "true" ]]; then
   horizontal_panes=$(tmux list-panes -F "#{pane_bottom}-#{pane_active}-#{pane_id}" | sort -n)
 
   for pane in ${horizontal_panes}; do
@@ -62,7 +68,7 @@ if [[ "${resize_height}" == "true" ]]; then
   done
 fi
 
-if [[ "${resize_width}" == "true" ]]; then
+if [[ "${resize_vertically}" == "true" ]] && [[ "${resize_width}" == "true" ]]; then
   vertical_panes=$(tmux list-panes -F "#{pane_right}-#{pane_active}-#{pane_id}" | sort -n)
 
   for pane in ${vertical_panes}; do
