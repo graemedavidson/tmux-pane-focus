@@ -55,15 +55,19 @@ debug_log "file" "minimum active dimensions: H:${MIN_ACTIVE_HEIGHT} x W:${MIN_AC
 debug_log "file" "minimum inactive dimensions (taking into account number of splits): H:${MIN_INACTIVE_HEIGHT} x W:${MIN_INACTIVE_WIDTH}"
 
 if [[ "${resize_horizontally}" == "true" ]] && [[ "${resize_height}" == "true" ]]; then
-  horizontal_panes=$(tmux list-panes -F "#{pane_bottom}-#{pane_active}-#{pane_id}" | sort -n)
+  horizontal_panes=$(tmux list-panes -F "#{pane_bottom}-#{pane_active}-#{pane_id}-#{pane_height}" | sort -n)
 
   for pane in ${horizontal_panes}; do
-    IFS=- read -r _ active id < <(echo "${pane}")
+    IFS=- read -r _ active id height < <(echo "${pane}")
 
     if [[ "${active}" -eq 1 ]]; then
       resize_pane "${id}" "${ACTIVE_PANE_HEIGHT_PERCENTAGE}" 0
     else
-      resize_pane "${id}" "${INACTIVE_PANE_SHARED_HEIGHT_PERCENTAGE}" 0
+      # Get latest width to take into account other changes
+      IFS=- read -r height< <(tmux list-panes -F "#{pane_height}" -f "#{m:${id},#{pane_id}}")
+      if [[ "${MIN_INACTIVE_HEIGHT}" -gt "${height}" ]]; then
+        resize_pane "${id}" "${INACTIVE_PANE_SHARED_HEIGHT_PERCENTAGE}" 0
+      fi
     fi
   done
 fi
@@ -77,7 +81,11 @@ if [[ "${resize_vertically}" == "true" ]] && [[ "${resize_width}" == "true" ]]; 
     if [[ "${active}" -eq 1 ]]; then
       resize_pane "${id}" 0 "${ACTIVE_PANE_WIDTH_PERCENTAGE}"
     else
-      resize_pane "${id}" 0 "${INACTIVE_PANE_SHARED_WIDTH_PERCENTAGE}"
+      # Get latest width to take into account other changes
+      IFS=- read -r width< <(tmux list-panes -F "#{pane_width}" -f "#{m:${id},#{pane_id}}")
+      if [[ "${MIN_INACTIVE_WIDTH}" -gt "${width}" ]]; then
+        resize_pane "${id}" 0 "${INACTIVE_PANE_SHARED_WIDTH_PERCENTAGE}"
+      fi
     fi
   done
 fi
