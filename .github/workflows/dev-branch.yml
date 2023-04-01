@@ -12,7 +12,22 @@ on:
     - LICENSE
 
 jobs:
-  tests:
+  linting:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: hadolint
+      uses: hadolint/hadolint-action@v3.1.0
+      with:
+        dockerfile: Dockerfile
+
+    - name: ShellCheck
+      uses: ludeeus/action-shellcheck@2.0.0
+
+  unittests:
+    needs: linting
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repo
@@ -34,11 +49,3 @@ jobs:
         SHELLSPEC_KCOV_OPTS: "--include-pattern=*.sh"
       run: |
         shellspec -s bash --kcov
-
-    - uses: codecov/codecov-action@v3
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        files: ./coverage/cobertura.xml
-        flags: unittests
-        fail_ci_if_error: true
-        verbose: true
