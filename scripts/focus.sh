@@ -56,6 +56,8 @@ debug_log "file" "minimum inactive dimensions (taking into account number of spl
 
 if [[ "${resize_horizontally}" == "true" ]] && [[ "${resize_height}" == "true" ]]; then
   horizontal_panes=$(tmux list-panes -F "#{pane_bottom}-#{pane_active}-#{pane_id}-#{pane_height}" | sort -n)
+  echo "horizontal"
+  echo "$horizontal_panes"
 
   for pane in ${horizontal_panes}; do
     IFS=- read -r _ active id height < <(echo "${pane}")
@@ -74,6 +76,8 @@ fi
 
 if [[ "${resize_vertically}" == "true" ]] && [[ "${resize_width}" == "true" ]]; then
   vertical_panes=$(tmux list-panes -F "#{pane_right}-#{pane_active}-#{pane_id}" | sort -n)
+  echo "vertical"
+  echo "$vertical_panes"
 
   for pane in ${vertical_panes}; do
     IFS=- read -r _ active id < <(echo "${pane}")
