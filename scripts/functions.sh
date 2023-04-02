@@ -52,22 +52,18 @@ get_settings() {
   window_size="${2}"
   active_percentage="${3}"
 
-  # ToDo: allow this to set via a user input
-  # active_pane_percentage="50"
-
   # No splits so always will be 100%
   if [[ "${split_count}" -eq 0 ]]; then
+    # Overwrite active as no splits
     active_percentage=100
     inactive_percentage=100
-
-    min_active=$((window_size / (100 / active_percentage)))
-    min_inactive=$((window_size / (100 / inactive_percentage)))
+    min_active="${window_size}"
+    min_inactive="${window_size}"
   else
-    inactive_percentage=$(( (100 - active_percentage) / split_count ))
-    min_active=$((window_size / (100 / active_percentage) - split_count))
-    min_inactive=$((window_size / (100 / inactive_percentage)))
+    inactive_percentage=$(((100 - active_percentage) / split_count))
+    min_active=$(((window_size * active_percentage / 100)))
+    min_inactive=$(((window_size * inactive_percentage / 100) - split_count))
   fi
-
   echo "${active_percentage}-${inactive_percentage}-${min_active}-${min_inactive}"
 }
 
@@ -83,11 +79,11 @@ resize_pane() {
   pane_width="${3}"
 
   if [[ ${pane_height} -gt 0 ]] && [[ ${pane_width} -gt 0 ]]; then
-    tmux resize-pane -t "${pane_id}" -y "${pane_height}%" -x "${pane_width}%"
+    tmux resize-pane -t "${pane_id}" -y "${pane_height}" -x "${pane_width}"
   elif [[ $pane_height -gt 0 ]]; then
-    tmux resize-pane -t "${pane_id}" -y "${pane_height}%"
+    tmux resize-pane -t "${pane_id}" -y "${pane_height}"
   elif [[ $pane_width -gt 0 ]]; then
-    tmux resize-pane -t "${pane_id}" -x "${pane_width}%"
+    tmux resize-pane -t "${pane_id}" -x "${pane_width}"
   fi
 }
 
@@ -105,6 +101,8 @@ check_active_pane() {
   min_active_width="${2}"
 
   IFS=- read -r active_height active_width < <(tmux list-panes -F "#{pane_height}-#{pane_width}" -f "#{m:1,#{pane_active}}")
+  debug_log "file" "Check Active Pane: Height - current: ${active_height} = min: ${min_active_height}"
+  debug_log "file" "Check Active Pane: Width - current: ${active_width} = min: ${min_active_width}"
   resize_height=false
   resize_width=false
   if [[ "${active_height}" -lt "${min_active_height}" ]]; then
