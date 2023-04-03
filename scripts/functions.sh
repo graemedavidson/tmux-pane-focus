@@ -10,16 +10,13 @@
 # Return(s):
 # - split_count (number): Number of splits on direction
 get_split_count() {
-  direction="${1}"
+  local panes="${1}"
 
   split_count=0
   last_val=0
 
-  # sort ensures panes listed correctly, left -> right, top -> bottom
-  panes=$(tmux list-panes -F "#{pane_${direction}}" | sort -n)
-
   for pane in ${panes}; do
-    IFS=- read -r pane_direction_val < <(echo "${pane}")
+    IFS=- read -r pane_direction_val _ _ _ _ _< <(echo "${pane}")
     if [[ "${pane_direction_val}" -gt "${last_val}" ]]; then
       ((split_count=split_count+1))
       last_val=$pane_direction_val
@@ -33,6 +30,40 @@ get_split_count() {
 
   echo "${split_count}"
 }
+
+# # Return split panel counts.
+# #
+# # right = vertical, bottom = horizontal
+# #
+# # Parameter(s):
+# # - direction (string): split type (right|bottom)
+# #
+# # Return(s):
+# # - split_count (number): Number of splits on direction
+# get_split_count() {
+#   direction="${1}"
+
+#   split_count=0
+#   last_val=0
+
+#   # sort ensures panes listed correctly, left -> right, top -> bottom
+#   panes=$(tmux list-panes -F "#{pane_${direction}}" | sort -n)
+
+#   for pane in ${panes}; do
+#     IFS=- read -r pane_direction_val < <(echo "${pane}")
+#     if [[ "${pane_direction_val}" -gt "${last_val}" ]]; then
+#       ((split_count=split_count+1))
+#       last_val=$pane_direction_val
+#     fi
+#   done
+
+#   # Decrement by 1 to account for single pane not having a split
+#   if [[ split_count -ge 1 ]]; then
+#     split_count=$((split_count-1))
+#   fi
+
+#   echo "${split_count}"
+# }
 
 # Return settings for pane sizes
 #
@@ -85,6 +116,37 @@ resize_pane() {
   elif [[ $pane_width -gt 0 ]]; then
     tmux resize-pane -t "${pane_id}" -x "${pane_width}"
   fi
+}
+
+# get values of active pane
+#
+# parameter(s):
+# - min_active_height (integer): absolute value for minimum height of active pane
+# - min_active_width (integer): absolute value for minimum width of active pane
+#
+# return(s):
+# - resize_height (string): true|false value indicating if resize required
+# - resize_width (string): true|false value indicating if resize required
+# - top
+# - bottom
+# - left
+# - right
+get_active_pane() {
+  local min_height="${1}"
+  local min_width="${2}"
+
+  IFS=- read -r height width top bottom left right< <(tmux list-panes -F "#{pane_height}-#{pane_width}-#{pane_top}-#{pane_bottom}-#{pane_left}-#{pane_right}" -f "#{m:1,#{pane_active}}")
+  resize_height=false
+  resize_width=false
+  if [[ "${height}" -lt "${min_height}" ]]; then
+    resize_height=true
+  fi
+  if [[ "${width}" -lt "${min_width}" ]]; then
+    resize_width=true
+  fi
+  # debug_log "file" "check active pane: height - current: ${height} = min: ${min_height}"
+  # debug_log "file" "check active pane: width - current: ${width} = min: ${min_width}"
+  echo -n "${resize_height}-${resize_width}-${top}-${bottom}-${left}-${right}"
 }
 
 # Check if the active pane requires resize

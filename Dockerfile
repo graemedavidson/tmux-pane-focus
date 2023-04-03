@@ -34,4 +34,6 @@ WORKDIR /home/developer
 COPY .tmux.conf /home/developer/
 RUN git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm && ~/.tmux/plugins/tpm/bin/install_plugins
 
+WORKDIR /home/developer/.tmux/plugins/
+
 ENTRYPOINT ["tmux"]

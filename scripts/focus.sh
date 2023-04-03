@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+exit 0
+
 CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 # Not working: shellcheck source=./scripts/functions.sh
 # shellcheck source=/dev/null
