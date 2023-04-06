@@ -42,68 +42,127 @@ vertical_panes=$(tmux list-panes -F "#{pane_right}-#{pane_top}-#{pane_bottom}-#{
 read -r vertical_split_count< <(get_split_count "${vertical_panes}")
 read -r horizontal_split_count< <(get_split_count "${horizontal_panes}")
 
-echo "horizontal panes:"
-echo "================="
-echo "${horizontal_panes}"
-echo "================="
-echo "settings > split count: ${horizontal_split_count}"
-echo "-----------------------------------------------------------"
-echo "vertical panes:"
-echo "================="
-echo "${vertical_panes}"
-echo "================="
-echo "settings > split count: ${vertical_split_count}"
-echo "settings > active percentage: ${active_percentage}"
-echo "settings > direction: ${direction} (${resize_height_setting}, ${resize_width_setting})"
-echo "-----------------------------------------------------------"
-
+# echo "horizontal panes:"
+# echo "================="
+# echo "${horizontal_panes}"
+# echo "================="
+# echo "settings > split count: ${horizontal_split_count}"
+# echo "-----------------------------------------------------------"
+# echo "vertical panes:"
+# echo "================="
+# echo "${vertical_panes}"
+# echo "================="
+# echo "settings > split count: ${vertical_split_count}"
+# echo "settings > active percentage: ${active_percentage}"
+# echo "settings > direction: ${direction} (${resize_height_setting}, ${resize_width_setting})"
+# echo "-----------------------------------------------------------"
+# exit
 
 IFS=- read -r active_pane_width_percentage inactive_pane_shared_width_percentage min_active_width min_inactive_width< <(get_settings "${vertical_split_count}" "${window_width}" "${active_percentage}")
 IFS=- read -r active_pane_height_percentage inactive_pane_shared_height_percentage min_active_height min_inactive_height< <(get_settings "${horizontal_split_count}" "${window_height}" "${active_percentage}")
 
 IFS=- read -r height_resize_required width_resize_required active_top active_bottom active_left active_right< <(get_active_pane "${min_active_height}" "${min_active_width}")
 
-echo "resize required - height: ${height_resize_required}, width: ${width_resize_required}"
-echo "active position - top: ${active_top} bottom: ${active_bottom} | left: ${active_left} right: ${active_right}"
-echo "-----------------------------------------------------------"
+# echo "resize required - height: ${height_resize_required}, width: ${width_resize_required}"
+# echo "active position - top: ${active_top} bottom: ${active_bottom} | left: ${active_left} right: ${active_right}"
+# echo "-----------------------------------------------------------"
 
-echo ">>>>>>>>>>>>>>>>> horizontal / height <<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+# exit 0
+#
+tmux display-message ":resize required - height: ${height_resize_required}, width: ${width_resize_required}"
+
+# echo ">>>>>>>>>>>>>>>>> horizontal / height <<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+
+resize_height_panes=()
 if [[ "${resize_height_setting}" == "true" ]] && [[ "${height_resize_required}" == "true" ]]; then
   for pane in ${horizontal_panes}; do
-    IFS=- read -r _ left right active id height < <(echo "${pane}")
+    IFS=- read -r bottom left right active id height < <(echo "${pane}")
 
-    if [[ "${active}" -eq 0 ]]; then
-      if [[ "${active_left}" -eq "${left}" ]] && [[ "${active_right}" -eq "${right}" ]]; then
-        # echo "(${id}) t: ${top}, b: ${bottom} - active: ${active} - width: ${width}"
-        resize_pane "${id}" "${min_inactive_height}" 0
-      elif [[ "${min_inactive_height}" -ne "${height}" ]]; then
-        resize_pane "${id}" "${min_inactive_height}" 0
-      fi
-    else
+    if [[ "${active}" -eq 1 ]]; then
+      # tmux send-keys -t "${id}" "updating height for active"
       resize_pane "${id}" "${min_active_height}" 0
+      # sleep 2
+      # tmux send-keys -R -t "${id}" C-l C-c
+      resize_height_panes+=("${id}")
+      continue
     fi
+
+    if [[ "${bottom}" -ne "${active_bottom}" ]] && [[ "${height}" -gt "${min_inactive_height}" ]]; then
+      resize_height_panes+=("${id}")
+      resize_pane "${id}" "${min_inactive_height}" 0
+    elif [[ "${left}" -le "${active_left}" ]] && [[ "${right}" -ge "${active_right}" ]] && [[ "${height}" -gt "${min_inactive_height}" ]]; then
+      # echo "${id}: ${left} -le ${active_left} && ${right} -ge ${active_right} && ${height} -gt ${min_inactive_height}"
+      resize_height_panes+=("${id}")
+      # tmux send-keys -t "${id}" "updating height for inactive due to being greater than min"
+      resize_pane "${id}" "${min_inactive_height}" 0
+      # sleep 2
+    fi
+
+    #   # echo "(${id}) l: ${left}, r: ${right} - active l: ${active_left}, active r: ${active_right}"
+    #   # tmux send-keys -t "${id}" "updating height for inactive due to on same col"
+    #   # resize_pane "${id}" "${min_inactive_height}" 0
+    #   # sleep 2
+    #   if [[ "${height}" -gt "${min_inactive_height}" ]]; then
+    #     # echo "(${id}) t: ${top}, b: ${bottom} - active: ${active} - width: ${width}"
+    #     # tmux send-keys -t "${id}" "updating height for inactive due to being greater than min"
+    #     # resize_pane "${id}" "${min_inactive_height}" 0
+    #     # sleep 2
+    #   fi
+    # fi
+
+    # tmux send-keys -R -t "${id}" C-l C-c
   done
 fi
 
 
-echo ">>>>>>>>>>>>>>>>> Vertical / Width <<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+# echo ">>>>>>>>>>>>>>>>> Vertical / Width <<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+resize_width_panes=()
 if [[ "${resize_width_setting}" == "true" ]] && [[ "${width_resize_required}" == "true" ]]; then
   for pane in ${vertical_panes}; do
-    IFS=- read -r _ top bottom active id width < <(echo "${pane}")
+    IFS=- read -r right top bottom active id width < <(echo "${pane}")
 
-    if [[ "${active}" -eq 0 ]]; then
-      if [[ "${active_top}" -eq "${top}" ]] && [[ "${active_bottom}" -eq "${bottom}" ]]; then
-        # echo "(${id}) t: ${top}, b: ${bottom} - active: ${active} - width: ${width}"
-        resize_pane "${id}" 0 "${min_inactive_width}"
-      elif [[ "${min_inactive_width}" -ne "${width}" ]]; then
-        resize_pane "${id}" 0 "${min_inactive_width}"
-      fi
-    else
-      echo "active"
+    if [[ "${active}" -eq 1 ]]; then
+      # tmux send-keys -t "${id}" "updating width for active"
       resize_pane "${id}" 0 "${min_active_width}"
+      # sleep 2
+      # tmux send-keys -R -t "${id}" C-l C-c
+      resize_width_panes+=("${id}")
+      continue
     fi
+
+    if [[ "${right}" -ne "${active_right}" ]] && [[ "${height}" -gt "${min_inactive_height}" ]]; then
+      resize_height_panes+=("${id}")
+      resize_pane "${id}" 0 "${min_inactive_width}"
+    elif [[ "${active_top}" -le "${top}" ]] && [[ "${active_bottom}" -ge "${bottom}" ]] && [[ "${width}" -gt "${min_inactive_width}" ]]; then
+      # echo "${id}: ${active_top} -le ${top} && ${active_bottom} -ge ${bottom} && ${width} -gt ${min_inactive_width}"
+      resize_width_panes+=("${id}")
+      # tmux send-keys -t "${id}" "updating width for inactive due to on same col"
+      resize_pane "${id}" 0 "${min_inactive_width}"
+      # sleep 2
+      # echo "(${id}) t: ${top}, b: ${bottom} - active: ${active} - width: ${width}"
+      # tmux send-keys -t "${id}" "updating width for inactive due to on same col"
+      # resize_pane "${id}" 0 "${min_inactive_width}"
+      # sleep 2
+      # if [[ "${width}" -gt "${min_inactive_width}" ]]; then
+      #   # echo "(${id}) t: ${top}, b: ${bottom} - active: ${active} - width: ${width}"
+      #   tmux send-keys -t "${id}" "updating width for inactive due to being greater than min"
+      #   resize_pane "${id}" 0 "${min_inactive_width}"
+      #   sleep 2
+      # fi
+    fi
+
+    # tmux send-keys -R -t "${id}" C-l C-c
   done
 fi
+
+echo "resize height (horizontal) panes:"
+echo "================="
+echo "${resize_height_panes[@]}"
+echo "================="
+echo "resize width (vertical) panes:"
+echo "================="
+echo "${resize_width_panes[@]}"
+echo "================="
 
 
 exit 0
