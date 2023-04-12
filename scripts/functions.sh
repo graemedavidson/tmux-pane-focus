@@ -135,7 +135,7 @@ get_active_pane() {
   local min_height="${1}"
   local min_width="${2}"
 
-  IFS=- read -r height width top bottom left right< <(tmux list-panes -F "#{pane_height}-#{pane_width}-#{pane_top}-#{pane_bottom}-#{pane_left}-#{pane_right}" -f "#{m:1,#{pane_active}}")
+  IFS=- read -r id height width top bottom left right< <(tmux list-panes -F "#{pane_id}-#{pane_height}-#{pane_width}-#{pane_top}-#{pane_bottom}-#{pane_left}-#{pane_right}" -f "#{m:1,#{pane_active}}")
   resize_height=false
   resize_width=false
   if [[ "${height}" -lt "${min_height}" ]]; then
@@ -146,7 +146,7 @@ get_active_pane() {
   fi
   # debug_log "file" "check active pane: height - current: ${height} = min: ${min_height}"
   # debug_log "file" "check active pane: width - current: ${width} = min: ${min_width}"
-  echo -n "${resize_height}-${resize_width}-${top}-${bottom}-${left}-${right}"
+  echo -n "${id}-${resize_height}-${resize_width}-${top}-${bottom}-${left}-${right}"
 }
 
 # Check if the active pane requires resize
