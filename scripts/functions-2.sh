@@ -24,8 +24,8 @@ get_active_pane() {
 
   IFS=- read -r id height width top bottom left right< <(tmux list-panes -F "#{pane_id}-#{pane_height}-#{pane_width}-#{pane_top}-#{pane_bottom}-#{pane_left}-#{pane_right}" -f "#{m:1,#{pane_active}}")
 
-  local min_height=$(((window_height * active_percentage / 100)))
-  local min_width=$(((window_width * active_percentage / 100)))
+  local min_height=$(((window_height * active_percentage / 100) - 1))
+  local min_width=$(((window_width * active_percentage / 100) - 1))
 
   local resize_height=false
   local resize_width=false
@@ -53,8 +53,8 @@ get_inactive_pane_size() {
   local active_percentage="${2}"
   local num_panes="${3}"
 
-  inactive_percentage=$(((100 - active_percentage) / num_panes))
-  min_inactive=$(((window_size * inactive_percentage / 100) - num_panes))
+  local inactive_percentage=$(((100 - active_percentage) / num_panes))
+  local min_inactive=$(((window_size * inactive_percentage / 100) - num_panes))
   echo "${min_inactive}"
 }
 
