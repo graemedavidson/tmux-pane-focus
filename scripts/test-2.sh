@@ -44,10 +44,10 @@ resize_height_panes=()
 prev_top=0
 prev_bottom=0
 if [[ "${resize_height_setting}" == "true" ]] && [[ "${resize_height}" == "true" ]]; then
-  horizontal_panes=$(tmux list-panes -F "#{pane_bottom}-#{pane_top}-#{pane_left}-#{pane_right}-#{pane_active}-#{pane_id}-#{pane_height}" | sort -n)
+  horizontal_panes=$(tmux list-panes -F "#{pane_left}#{pane_top}-#{pane_bottom}-#{pane_top}-#{pane_left}-#{pane_right}-#{pane_active}-#{pane_id}" | sort -nr)
 
   for pane in ${horizontal_panes}; do
-    IFS=- read -r bottom top left right active id _ < <(echo "${pane}")
+    IFS=- read -r _ bottom top left right active id< <(echo "${pane}")
 
     if [[ "${active}" -eq 1 ]]; then
       resize_height_panes+=("${id}")
@@ -78,10 +78,10 @@ resize_width_panes=()
 prev_left=0
 prev_right=0
 if [[ "${resize_width_setting}" == "true" ]] && [[ "${resize_width}" == "true" ]]; then
-  vertical_panes=$(tmux list-panes -F "#{pane_right}-#{pane_left}-#{pane_top}-#{pane_bottom}-#{pane_active}-#{pane_id}-#{pane_width}" | sort -n)
+  vertical_panes=$(tmux list-panes -F "#{pane_left}#{pane_top}-#{pane_right}-#{pane_left}-#{pane_top}-#{pane_bottom}-#{pane_active}-#{pane_id}" | sort -nr)
 
   for pane in ${vertical_panes}; do
-    IFS=- read -r right left top bottom active id _ < <(echo "${pane}")
+    IFS=- read -r _ right left top bottom active id< <(echo "${pane}")
 
     if [[ "${active}" -eq 1 ]]; then
       resize_width_panes+=("${id}")
@@ -110,11 +110,11 @@ fi
 
 echo "Active Percentage: ${active_percentage}"
 echo ""
-echo "resize height (horizontal) panes [$(( ${#resize_height_panes[@]} -1 ))]:"
+echo "resize height (horizontal) - inactive panes [$(( ${#resize_height_panes[@]} -1 ))]:"
 echo "================="
 echo "${resize_height_panes[@]}"
 echo ""
-echo "resize width (vertical) panes [$(( ${#resize_width_panes[@]} -1 ))]:"
+echo "resize width (vertical) - inactive panes [$(( ${#resize_width_panes[@]} -1 ))]:"
 echo "================="
 echo "${resize_width_panes[@]}"
 echo ""
