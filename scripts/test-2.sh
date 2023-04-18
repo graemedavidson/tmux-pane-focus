@@ -40,11 +40,13 @@ IFS=- read -r active_pane_id resize_height resize_width active_min_height active
 echo "resize required - height: ${resize_height}, width: ${resize_width}"
 tmux display-message ":resize required - height: ${resize_height}, width: ${resize_width}"
 
+declare -A inactive_height_panes
 resize_height_panes=()
 prev_top=0
 prev_bottom=0
+prev_id=""
 if [[ "${resize_height_setting}" == "true" ]] && [[ "${resize_height}" == "true" ]]; then
-  horizontal_panes=$(tmux list-panes -F "#{pane_left}#{pane_top}-#{pane_bottom}-#{pane_top}-#{pane_left}-#{pane_right}-#{pane_active}-#{pane_id}" | sort -nr)
+  horizontal_panes=$(tmux list-panes -F "#{pane_left}#{pane_top}-#{pane_bottom}-#{pane_top}-#{pane_left}-#{pane_right}-#{pane_active}-#{pane_id}" | sort -n)
 
   for pane in ${horizontal_panes}; do
     IFS=- read -r _ bottom top left right active id< <(echo "${pane}")
@@ -54,14 +56,17 @@ if [[ "${resize_height_setting}" == "true" ]] && [[ "${resize_height}" == "true"
       continue
     fi
 
-    echo "${id}: >>> if top: [[ ${top} -eq ${prev_top} ]] && bottom: [[ ${bottom} -eq ${prev_bottom} ]]; then"
+    # echo "${id}: >>> if top: [[ ${top} -ge ${prev_top} ]] && bottom: [[ ${bottom} -le ${prev_bottom} ]]; then"
     # Do not add a pane if a previous pane with same sides has been added
-    if [[ "${top}" -eq "${prev_top}" ]] && [[ "${bottom}" -eq "${prev_bottom}" ]]; then
-      echo "true"
-      continue
+    inactive_height_panes+=( ["${id}"]=0 )
+    if [[ "${top}" -ge "${prev_top}" ]] && [[ "${bottom}" -le "${prev_bottom}" ]]; then
+      # echo "true"
+      ((inactive_height_panes["${prev_id}"]=inactive_height_panes["${prev_id}"]+1))
+      # continue
     else
       prev_top="${top}"
       prev_bottom="${bottom}"
+      prev_id="${id}"
     fi
 
     if [[ "${left}" -ge "${active_left}" ]] && [[ "${left}" -le "${active_right}" ]]; then
@@ -74,11 +79,13 @@ if [[ "${resize_height_setting}" == "true" ]] && [[ "${resize_height}" == "true"
   done
 fi
 
+declare -A inactive_width_panes
 resize_width_panes=()
 prev_left=0
 prev_right=0
+prev_id=""
 if [[ "${resize_width_setting}" == "true" ]] && [[ "${resize_width}" == "true" ]]; then
-  vertical_panes=$(tmux list-panes -F "#{pane_left}#{pane_top}-#{pane_right}-#{pane_left}-#{pane_top}-#{pane_bottom}-#{pane_active}-#{pane_id}" | sort -nr)
+  vertical_panes=$(tmux list-panes -F "#{pane_left}#{pane_top}-#{pane_right}-#{pane_left}-#{pane_top}-#{pane_bottom}-#{pane_active}-#{pane_id}" | sort -n)
 
   for pane in ${vertical_panes}; do
     IFS=- read -r _ right left top bottom active id< <(echo "${pane}")
@@ -88,14 +95,17 @@ if [[ "${resize_width_setting}" == "true" ]] && [[ "${resize_width}" == "true" ]
       continue
     fi
 
-    echo "${id}: >>> if left: [[ ${left} -eq ${prev_left} ]] && right: [[ ${right} -eq ${prev_right} ]]; then"
+    # echo "${id}: >>> if left: [[ ${left} -ge ${prev_left} ]] && right: [[ ${right} -le ${prev_right} ]]; then"
     # Do not add a pane if a previous pane with same sides has been added
-    if [[ "${left}" -eq "${prev_left}" ]] && [[ "${right}" -eq "${prev_right}" ]]; then
+    inactive_width_panes+=( ["${id}"]=0 )
+    if [[ "${left}" -ge "${prev_left}" ]] && [[ "${right}" -le "${prev_right}" ]]; then
       echo "true"
-      continue
+      ((inactive_width_panes["${prev_id}"]=inactive_width_panes["${prev_id}"]+1))
+      # continue
     else
       prev_left="${left}"
       prev_right="${right}"
+      prev_id="${id}"
     fi
 
     if [[ "${top}" -ge "${active_top}" ]] && [[ "${top}" -le "${active_bottom}" ]]; then
@@ -108,41 +118,55 @@ if [[ "${resize_width_setting}" == "true" ]] && [[ "${resize_width}" == "true" ]
   done
 fi
 
-echo "Active Percentage: ${active_percentage}"
+# Remove active pane from count
+inactive_height_panes="$(( ${#resize_height_panes[@]} -1 ))"
+inactive_width_panes="$(( ${#resize_width_panes[@]} -1 ))"
+
 echo ""
-echo "resize height (horizontal) - inactive panes [$(( ${#resize_height_panes[@]} -1 ))]:"
+echo "Active Percentage: ${active_percentage}"
+echo "window height: ${window_height} x width: ${window_width}"
+echo ""
+echo "resize height (horizontal) - inactive panes [${inactive_height_panes}]"
 echo "================="
 echo "${resize_height_panes[@]}"
 echo ""
-echo "resize width (vertical) - inactive panes [$(( ${#resize_width_panes[@]} -1 ))]:"
+echo "resize width (vertical) - inactive panes [${inactive_width_panes}]"
 echo "================="
 echo "${resize_width_panes[@]}"
 echo ""
 
-# Remove 1 from passed panes to account for active pane
-IFS=- read -r min_inactive_height< <(get_inactive_pane_size "${window_height}" "${active_percentage}" "$(( ${#resize_height_panes[@]} -1 ))")
-IFS=- read -r min_inactive_width< <(get_inactive_pane_size "${window_width}" "${active_percentage}" "$(( ${#resize_width_panes[@]} -1 ))")
+# IFS=- read -r min_inactive_height< <(get_inactive_pane_size "${window_height}" "${active_percentage}" "${resize_height_inactive_panes_count}")
+# IFS=- read -r min_inactive_width< <(get_inactive_pane_size "${window_width}" "${active_percentage}" "${resize_width_inactive_panes_count}")
+# echo "min inactives - height: ${min_inactive_height} - width: ${min_inactive_width}"
+# echo ""
+# echo "^^^^^^^^^^^^^^^^^^^^"
 
-echo "min inactives - height: ${min_inactive_height} - width: ${min_inactive_width}"
-echo ""
-echo "^^^^^^^^^^^^^^^^^^^^"
+if [[ "${resize_height_setting}" == "true" ]]; then
+  for pane_id in "${resize_height_panes[@]}"; do
+    if [[ "${pane_id}" == "${active_pane_id}" ]]; then
+      resize_pane "${pane_id}" "${active_min_height}" 0
+      echo "resize_pane height active - id: ${pane_id} - ${active_min_height} 0"
+    else
+      IFS=- read -r min_inactive< <(get_inactive_pane_size "${window_height}" "${active_percentage}" "${inactive_height_panes[${pane_id}]}")
+      resize_pane "${pane_id}" "${min_inactive}" 0
+      echo "resize_pane height - id: ${pane_id} - ${min_inactive} 0"
+    fi
+  done
+fi
 
-for pane_id in "${resize_height_panes[@]}"; do
-  if [[ "${pane_id}" == "${active_pane_id}" ]]; then
-    resize_pane "${pane_id}" "${active_min_height}" 0
-    echo "resize_pane height active - id: ${pane_id} - ${active_min_height} 0"
-  else
-    resize_pane "${pane_id}" "${min_inactive_height}" 0
-    echo "resize_pane height - id: ${pane_id} - ${min_inactive_height} 0"
-  fi
-done
+if [[ "${resize_width_setting}" == "true" ]]; then
+  for pane_id in "${resize_width_panes[@]}"; do
+    if [[ "${pane_id}" == "${active_pane_id}" ]]; then
+      resize_pane "${pane_id}" 0 "${active_min_width}"
+      echo "resize_pane width active - id: ${pane_id} - 0 ${active_min_width}"
+    else
+      IFS=- read -r min_inactive< <(get_inactive_pane_size "${window_width}" "${active_percentage}" "${inactive_width_panes[${pane_id}]}")
 
-for pane_id in "${resize_width_panes[@]}"; do
-  if [[ "${pane_id}" == "${active_pane_id}" ]]; then
-    resize_pane "${pane_id}" 0 "${active_min_width}"
-    echo "resize_pane width active - id: ${pane_id} - 0 ${active_min_width}"
-  else
-    resize_pane "${pane_id}" 0 "${min_inactive_width}"
-    echo "resize_pane width - id: ${pane_id} - 0 ${min_inactive_width}"
-  fi
-done
+      echo "==="
+      echo "test ${pane_id}: ${min_inactive} ==== ${inactive_width_panes[${pane_id}]}"
+
+      resize_pane "${pane_id}" 0 "${min_inactive}"
+      echo "resize_pane width - id: ${pane_id} - 0 ${min_inactive}"
+    fi
+  done
+fi
