@@ -46,7 +46,7 @@ prev_top=0
 prev_bottom=0
 prev_id=""
 if [[ "${resize_height_setting}" == "true" ]] && [[ "${resize_height}" == "true" ]]; then
-  horizontal_panes=$(tmux list-panes -F "#{pane_left}#{pane_top}-#{pane_bottom}-#{pane_top}-#{pane_left}-#{pane_right}-#{pane_active}-#{pane_id}" | sort -n)
+  horizontal_panes=$(tmux list-panes -F "#{pane_index}-#{pane_bottom}-#{pane_top}-#{pane_left}-#{pane_right}-#{pane_active}-#{pane_id}" | sort -n)
 
   for pane in ${horizontal_panes}; do
     IFS=- read -r _ bottom top left right active id< <(echo "${pane}")
@@ -85,7 +85,7 @@ prev_left=0
 prev_right=0
 prev_id=""
 if [[ "${resize_width_setting}" == "true" ]] && [[ "${resize_width}" == "true" ]]; then
-  vertical_panes=$(tmux list-panes -F "#{pane_left}#{pane_top}-#{pane_right}-#{pane_left}-#{pane_top}-#{pane_bottom}-#{pane_active}-#{pane_id}" | sort -n)
+  vertical_panes=$(tmux list-panes -F "#{pane_index}-#{pane_right}-#{pane_left}-#{pane_top}-#{pane_bottom}-#{pane_active}-#{pane_id}" | sort -n)
 
   for pane in ${vertical_panes}; do
     IFS=- read -r _ right left top bottom active id< <(echo "${pane}")
