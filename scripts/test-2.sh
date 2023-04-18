@@ -41,15 +41,30 @@ echo "resize required - height: ${resize_height}, width: ${resize_width}"
 tmux display-message ":resize required - height: ${resize_height}, width: ${resize_width}"
 
 resize_height_panes=()
+prev_top=0
+prev_bottom=0
 if [[ "${resize_height_setting}" == "true" ]] && [[ "${resize_height}" == "true" ]]; then
-  horizontal_panes=$(tmux list-panes -F "#{pane_bottom}-#{pane_left}-#{pane_right}-#{pane_active}-#{pane_id}-#{pane_height}" | sort -n)
+  horizontal_panes=$(tmux list-panes -F "#{pane_bottom}-#{pane_top}-#{pane_left}-#{pane_right}-#{pane_active}-#{pane_id}-#{pane_height}" | sort -n)
 
   for pane in ${horizontal_panes}; do
-    IFS=- read -r bottom left right active id _ < <(echo "${pane}")
+    IFS=- read -r bottom top left right active id _ < <(echo "${pane}")
 
     if [[ "${active}" -eq 1 ]]; then
       resize_height_panes+=("${id}")
-    elif [[ "${left}" -ge "${active_left}" ]] && [[ "${left}" -le "${active_right}" ]]; then
+      continue
+    fi
+
+    echo "${id}: >>> if top: [[ ${top} -eq ${prev_top} ]] && bottom: [[ ${bottom} -eq ${prev_bottom} ]]; then"
+    # Do not add a pane if a previous pane with same sides has been added
+    if [[ "${top}" -eq "${prev_top}" ]] && [[ "${bottom}" -eq "${prev_bottom}" ]]; then
+      echo "true"
+      continue
+    else
+      prev_top="${top}"
+      prev_bottom="${bottom}"
+    fi
+
+    if [[ "${left}" -ge "${active_left}" ]] && [[ "${left}" -le "${active_right}" ]]; then
       resize_height_panes+=("${id}")
     elif [[ "${right}" -le "${active_right}" ]] && [[ "${right}" -ge "${active_left}" ]]; then
       resize_height_panes+=("${id}")
@@ -60,15 +75,30 @@ if [[ "${resize_height_setting}" == "true" ]] && [[ "${resize_height}" == "true"
 fi
 
 resize_width_panes=()
+prev_left=0
+prev_right=0
 if [[ "${resize_width_setting}" == "true" ]] && [[ "${resize_width}" == "true" ]]; then
-  vertical_panes=$(tmux list-panes -F "#{pane_right}-#{pane_top}-#{pane_bottom}-#{pane_active}-#{pane_id}-#{pane_width}" | sort -n)
+  vertical_panes=$(tmux list-panes -F "#{pane_right}-#{pane_left}-#{pane_top}-#{pane_bottom}-#{pane_active}-#{pane_id}-#{pane_width}" | sort -n)
 
   for pane in ${vertical_panes}; do
-    IFS=- read -r right top bottom active id _ < <(echo "${pane}")
+    IFS=- read -r right left top bottom active id _ < <(echo "${pane}")
 
     if [[ "${active}" -eq 1 ]]; then
       resize_width_panes+=("${id}")
-    elif [[ "${top}" -ge "${active_top}" ]] && [[ "${top}" -le "${active_bottom}" ]]; then
+      continue
+    fi
+
+    echo "${id}: >>> if left: [[ ${left} -eq ${prev_left} ]] && right: [[ ${right} -eq ${prev_right} ]]; then"
+    # Do not add a pane if a previous pane with same sides has been added
+    if [[ "${left}" -eq "${prev_left}" ]] && [[ "${right}" -eq "${prev_right}" ]]; then
+      echo "true"
+      continue
+    else
+      prev_left="${left}"
+      prev_right="${right}"
+    fi
+
+    if [[ "${top}" -ge "${active_top}" ]] && [[ "${top}" -le "${active_bottom}" ]]; then
       resize_width_panes+=("${id}")
     elif [[ "${bottom}" -le "${active_bottom}" ]] && [[ "${bottom}" -ge "${active_top}" ]]; then
       resize_width_panes+=("${id}")
