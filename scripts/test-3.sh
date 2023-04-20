@@ -53,23 +53,32 @@ if [[ "${resize_height}" == "true" ]]; then
 
     if [[ "${active}" -eq 1 ]]; then
       resize_height_panes+=("${id}")
-      prev_top="${top}"
-      prev_bottom="${bottom}"
-      prev_id_height="${id}"
+
+      if [[ "${top}" -ge "${prev_top}" ]] && [[ "${bottom}" -le "${prev_bottom}" ]]; then
+        unset 'inactive_height_panes[${prev_id_height}]'
+        prev_top="${bottom}"
+        prev_bottom=$(( bottom + 1 ))
+        prev_id_height="${id}"
+      else
+        prev_top="${top}"
+        prev_bottom="${bottom}"
+        prev_id_height="${id}"
+      fi
+
       continue
     fi
 
-    # Do not add a pane if a previous pane with same sides has been added
     inactive_height_panes+=( ["${id}"]=0 )
-    # echo "if [[ ${top} -le ${prev_top} ]] && [[ ${bottom} -ge ${prev_bottom} ]] && [[ ${prev_id_height} != ${active_pane_id} ]]; then"
-    if [[ "${top}" -le "${prev_top}" ]] && [[ "${bottom}" -ge "${prev_bottom}" ]] && [[ "${prev_id_height}" != "${active_pane_id}" ]]; then
-      # echo "true (htp): ${prev_id_height}"
+    # echo "${index}: if L:[[ '${top}' -ge '${prev_top}' ]] && R:[[ '${bottom}' -le '${prev_bottom}' ]]; then"
+    if [[ "${top}" -ge "${prev_top}" ]] && [[ "${bottom}" -le "${prev_bottom}" ]]; then
+      # echo "true (wlr): ${prev_id_height}"
       ((inactive_height_panes["${prev_id_height}"]=inactive_height_panes["${prev_id_height}"]+1))
     else
       prev_top="${top}"
       prev_bottom="${bottom}"
       prev_id_height="${id}"
     fi
+
 
     if [[ "${left}" -ge "${active_left}" ]] && [[ "${left}" -le "${active_right}" ]]; then
       resize_height_panes+=("${id}")
