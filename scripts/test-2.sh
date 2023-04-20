@@ -52,13 +52,13 @@ if [[ "${resize_height_setting}" == "true" ]] && [[ "${resize_height}" == "true"
     IFS=- read -r _ bottom top left right active id< <(echo "${pane}")
 
     if [[ "${active}" -eq 1 ]]; then
-      resize_height_panes+=("${id}")
+
       continue
     fi
 
     # echo "${id}: >>> if top: [[ ${top} -ge ${prev_top} ]] && bottom: [[ ${bottom} -le ${prev_bottom} ]]; then"
     # Do not add a pane if a previous pane with same sides has been added
-    inactive_height_panes+=( ["${id}"]=0 )
+    inactive_height_panes+=( ["${id}"]=1 )
     if [[ "${top}" -ge "${prev_top}" ]] && [[ "${bottom}" -le "${prev_bottom}" ]]; then
       # echo "true"
       ((inactive_height_panes["${prev_id}"]=inactive_height_panes["${prev_id}"]+1))
@@ -97,7 +97,7 @@ if [[ "${resize_width_setting}" == "true" ]] && [[ "${resize_width}" == "true" ]
 
     # echo "${id}: >>> if left: [[ ${left} -ge ${prev_left} ]] && right: [[ ${right} -le ${prev_right} ]]; then"
     # Do not add a pane if a previous pane with same sides has been added
-    inactive_width_panes+=( ["${id}"]=0 )
+    inactive_width_panes+=( ["${id}"]=1 )
     if [[ "${left}" -ge "${prev_left}" ]] && [[ "${right}" -le "${prev_right}" ]]; then
       echo "true"
       ((inactive_width_panes["${prev_id}"]=inactive_width_panes["${prev_id}"]+1))

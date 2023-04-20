@@ -36,7 +36,7 @@ get_active_pane() {
     local resize_width=true
   fi
 
-  echo -n "${id}-${resize_height}-${resize_width}-${min_height}-${min_width}-${top}-${bottom}-${left}-${right}"
+  echo -n "${id}-${resize_height}-${resize_width}-${min_height}-${min_width}-${top}-${bottom}-${left}-${right}-${height}-${width}"
 }
 
 # Determine inactive pane size
@@ -53,8 +53,8 @@ get_inactive_pane_size() {
   local active_percentage="${2}"
   local num_panes="${3}"
 
-  local inactive_percentage=$(((100 - active_percentage) / num_panes))
-  local min_inactive=$(((window_size * inactive_percentage / 100) - num_panes))
+  local inactive_percentage=$((100 - active_percentage))
+  local min_inactive=$(((window_size * inactive_percentage / 100) / num_panes))
   echo "${min_inactive}"
 }
 
