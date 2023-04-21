@@ -92,7 +92,7 @@ get_tmux_option() {
   local option="${1}"
   local default_value="${2}"
 
-  read -r option_value< <(tmux show-options -qv "${option}")
+  read -r option_value< <(tmux show-options -wqv "${option}")
   if [[ -z "${option_value}" ]]; then
     # Try global (-g)
     read -r option_value< <(tmux show-options -gqv "${option}")
@@ -114,5 +114,5 @@ get_tmux_option() {
 set_tmux_option() {
   local option="${1}"
   local option_value="${2}"
-  tmux set-option "${option}" "${option_value}"
+  tmux set-option -w "${option}" "${option_value}"
 }
