@@ -116,3 +116,34 @@ set_tmux_option() {
   local option_value="${2}"
   tmux set-option -w "${option}" "${option_value}"
 }
+
+# determine if inactive pane inside boundaries of active pane col or row
+#
+# Takes left and right values for determining column or top and bottom for row.
+#
+# Parameter(s):
+# - side_a (integer): value of side of inactive pane
+# - side_a_active (integer): value of side of active pane for comparison
+# - side_b (integer): value of side of inactive pane
+# - side_b_active (integer): value of side of active pane for comparison
+#
+# Return(s):
+# - result (bool): true if inactive pane within boundaries of active pane, else false
+in_col_row() {
+  local side_a="${1}"
+  local side_a_active="${2}"
+  local side_b="${3}"
+  local side_b_active="${4}"
+
+  local result=false
+
+  if [[ "${side_a}" -ge "${side_a_active}" ]] && [[ "${side_a}" -le "${side_b_active}" ]]; then
+    local result=true
+  elif [[ "${side_b}" -le "${side_b_active}" ]] && [[ "${side_b}" -ge "${side_a_active}" ]]; then
+    local result=true
+  elif [[ "${side_a}" -le "${side_a_active}" ]] && [[ "${side_b}" -ge "${side_b_active}" ]]; then
+    local result=true
+  fi
+
+  echo "${result}"
+}
