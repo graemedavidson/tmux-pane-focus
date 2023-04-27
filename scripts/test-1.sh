@@ -10,10 +10,13 @@ if [[ $pane_count -eq 1 ]]; then
   exit 0
 fi
 
-read -r active_percentage< <(get_tmux_option "@pane-focus-size" "50")
-if [[ "${active_percentage}" == "off" ]]; then
+read -r enabled< <(get_tmux_option "@pane-focus-enabled" "on")
+if [[ "${enabled}" == "off" ]]; then
   exit
-elif [[ "${active_percentage}" -lt 50 ]] || [[ "${active_percentage}" -ge 100 ]]; then
+fi
+
+read -r active_percentage< <(get_tmux_option "@pane-focus-size" "50")
+if [[ "${active_percentage}" -lt 50 ]] || [[ "${active_percentage}" -ge 100 ]]; then
   tmux display-message "#[bg=red]Invalid @pane-focus-size setting in .tmux.conf file: ${active_percentage}; expected value between 50 and 100.#[bg=default]"
   exit
 fi
