@@ -96,11 +96,10 @@ get_tmux_option() {
   if [[ -z "${option_value}" ]]; then
     # Try global (-g)
     read -r option_value< <(tmux show-options -gqv "${option}")
-    if [[ -z "${ACTIVE_PERCENTAGE}" ]]; then
-      local option_value="${default_value}"
-    fi
   fi
-
+  if [[ -z "${option_value}" ]]; then
+    local option_value="${default_value}"
+  fi
   set_tmux_option "${option}" "${option_value}"
 
   echo "${option_value}"
