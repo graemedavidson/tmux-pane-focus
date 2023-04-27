@@ -148,9 +148,18 @@ for pane_index in "${!inactive_width_parent_panes[@]}"; do
   fi
 done
 
-# Remove active pane from count
+# Remove active pane from count and parent panes from count
 inactive_height_panes="$(( ${#resize_height_panes[@]} - 1))"
+if [[ "${inactive_height_panes}" -gt 1 ]]; then
+  inactive_height_panes="$(( inactive_height_panes - inactive_height_parent_pane_count ))"
+fi
 inactive_width_panes="$(( ${#resize_width_panes[@]} - 1))"
+if [[ "${inactive_width_panes}" -gt 1 ]]; then
+  inactive_width_panes="$(( inactive_width_panes - inactive_width_parent_pane_count ))"
+fi
+
+IFS=- read -r min_inactive_height< <(get_inactive_pane_size "${window_height}" "${active_percentage}" "${inactive_height_panes}")
+IFS=- read -r min_inactive_width< <(get_inactive_pane_size "${window_width}" "${active_percentage}" "${inactive_width_panes}")
 
 # echo "resize height (horizontal) - inactive panes: ${inactive_height_panes}, parent panes: ${inactive_height_parent_pane_count}"
 # echo "================="
@@ -165,18 +174,6 @@ inactive_width_panes="$(( ${#resize_width_panes[@]} - 1))"
 # echo "${!inactive_width_parent_panes[@]}"
 # echo "${inactive_width_parent_panes[@]}"
 # echo ""
-
-# Remove parent panes from count, remove -1 to account for 2 panes only having 1 split, remove parent pane count
-if [[ "${inactive_height_panes}" -gt 1 ]]; then
-  inactive_height_panes="$(( inactive_height_panes - inactive_height_parent_pane_count ))"
-fi
-if [[ "${inactive_width_panes}" -gt 1 ]]; then
-  inactive_width_panes="$(( inactive_width_panes - inactive_width_parent_pane_count ))"
-fi
-# echo "inactive pane counts: ${inactive_height_panes} - ${inactive_width_panes}"
-
-IFS=- read -r min_inactive_height< <(get_inactive_pane_size "${window_height}" "${active_percentage}" "${inactive_height_panes}")
-IFS=- read -r min_inactive_width< <(get_inactive_pane_size "${window_width}" "${active_percentage}" "${inactive_width_panes}")
 # echo "min inactives - height: ${min_inactive_height} - width: ${min_inactive_width}"
 
 if [[ "${resize_height}" == "true" ]] && [[ "${resize_height_setting}" == "true" ]]; then
