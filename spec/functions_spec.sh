@@ -1,31 +1,5 @@
 #!/bin/shellspec shell=bash
 
-# Test Data
-# pl1="$(cat <<-END
-# 10
-# END
-# )"
-
-# pl2="$(cat <<-END
-# 10
-# 20
-# 30
-# END
-# )"
-
-# pl3="$(cat <<-END
-# 10
-# 20
-# 20
-# END
-# )"
-
-
-
-
-
-
-# Tests
 Describe 'check get_active_pane'
   Include scripts/functions.sh
 
@@ -61,104 +35,90 @@ EOF
   End
 End
 
+Describe 'check in_col_row'
+  Include scripts/functions.sh
 
+  # side a
+  # side a active
+  # side b
+  # side b active
+  # result (bool)
+  Parameters
+    0 0 100 100 true
+    0 50 100 100 true
+    25 0 100 100 true
+    0 25 125 100 true
 
+    0 50 49 100 false
+    51 0 100 50 false
+    0 75 25 100 false
+    75 0 100 50 false
+  End
 
+  It 'returns true if inactive pane within boundaries of active pane, other false'
+    When call in_col_row "${1}" "${2}" "${3}" "${4}"
+    The output should eq "${5}"
+  End
+End
 
+Describe 'check get_inactive_pane_size'
+  Include scripts/functions.sh
 
-# Describe 'check get_split_count'
-#   Include scripts/functions.sh
+  # window size
+  # active percentage
+  # number of panes
+  # result (minimum inactive pane size)
+  Parameters
+    100 50 1 50
+    100 60 1 40
+    100 70 1 30
+    100 80 1 20
+    100 90 1 10
 
-#   Parameters
-#     "right" "${pl1}" 0
-#     "left" "${pl1}" 0
-#     "right" "${pl2}" 2
-#     "left" "${pl2}" 2
-#     "right" "${pl3}" 1
-#     "left" "${pl3}" 1
-#   End
+    100 50 2 25
+    100 60 2 20
+    100 70 2 15
+    100 80 2 10
+    100 90 2 5
 
-#   It 'returns correct number of splits'
+    # Bash uses integer maths, so rounds down to whole numbers
+    100 50 3 16
+    100 60 3 13
+    100 70 3 10
+    100 80 3 6
+    100 90 3 3
+  End
 
-#     shellspec_mock tmux <<-EOF
-# echo "${2}"
-# EOF
+  It 'return the minimum size of an inactive pane'
+    When call get_inactive_pane_size "${1}" "${2}" "${3}"
+    The output should eq "${4}"
+  End
+End
 
-#     When call get_split_count "${1}"
-#     The output should eq "${3}"
-#   End
-# End
+Describe 'check get_tmux_option'
+  Include scripts/functions.sh
 
+  # option
+  # default value
+  # result (option value)
+  Parameters
+    "@pane-focus-size" "50" "50"
+    "@pane-focus-direction" "+" "+"
+  End
 
+  set_tmux_option() {
+    echo "" > /dev/null
+  }
 
+  It 'returns set value or default'
+    shellspec_mock tmux show-options -wqv <<-EOF
+echo "${2}"
+EOF
+    shellspec_mock tmux show-options -gqv <<-EOF
+echo "${2}"
+EOF
 
-
-
-
-
-
-
-
-
-
-
-
-# Describe 'check get_settings'
-#   Include scripts/functions.sh
-
-#   # split_count window_size active_percentage result(active_percentage-inactive_percentage-min_active-min_inactive)
-#   Parameters
-#     0 100 50 "100-100-100-100"
-#     0 200 50 "100-100-200-200"
-#     1 100 50 "50-50-50-50"
-#     1 200 50 "50-50-100-100"
-#     3 1000 50 "50-16-500-160"
-#     1 1000 60 "60-40-600-400"
-#     1 1000 70 "70-30-700-300"
-#     1 1000 80 "80-20-800-200"
-#     1 1000 90 "90-10-900-100"
-#     2 1000 60 "60-20-600-200"
-#     2 1000 70 "70-15-700-150"
-#     2 1000 80 "80-10-800-100"
-#     2 1000 90 "90-5-900-50"
-#   End
-
-#   It 'returns correct pane settings'
-#     When call get_settings "${1}" "${2}" "${3}"
-#     The output should eq "${4}"
-#   End
-# End
-
-# # Does not have any outputs to test
-# # ToDo: review adding a debug output?
-# # Describe 'check resize_pane'
-# #   Include scripts/functions.sh
-
-# #   Parameters
-# #   End
-
-# #   It 'correctly resizes pane'
-# #     When call resize_pane
-# #     The output should eq
-# #   End
-# # End
-
-# Describe 'check check_active_pane'
-#   Include scripts/functions.sh
-
-#   Parameters
-#     99 99 "100-100" "false-false"
-#     100 100 "100-100" "false-false"
-#     200 200 "100-100" "true-true"
-#   End
-
-#   It 'returns correct resize results'
-
-#     shellspec_mock tmux <<-EOF
-# echo "${3}"
-# EOF
-
-#     When call check_active_pane "${1}" "${2}"
-#     The output should eq "${4}"
-#   End
-# End
+    When call get_tmux_option "${1}" "${2}"
+    The output should eq "${3}"
+  End
+End
