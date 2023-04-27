@@ -38,10 +38,10 @@ if [[ "${direction}" == "-" ]]; then
 fi
 
 IFS=- read -r window_height window_width < <(tmux list-windows -F "#{window_height}-#{window_width}" -f "#{m:1,#{window_active}}")
-IFS=- read -r active_pane_index resize_height resize_width active_min_height active_min_width active_top active_bottom active_left active_right active_height active_width< <(get_active_pane "${window_height}" "${window_width}" "${active_percentage}")
+IFS=- read -r active_pane_index resize_height resize_width active_min_height active_min_width active_top active_bottom active_left active_right _ _< <(get_active_pane "${window_height}" "${window_width}" "${active_percentage}")
 
 # echo ":resize required (${active_percentage}%) | h:${resize_height} (active:${active_height} min:${active_min_height}) | w:${resize_width} (active:${active_width}, min:${active_min_width}) | window h:${window_height} x w:${window_width}"
-tmux display-message ":resize required (${active_percentage}%) | h:${resize_height} (active:${active_height}, min:${active_min_height}) | w:${resize_width} (active:${active_width}, min:${active_min_width}) | window h:${window_height} x w:${window_width}"
+# tmux display-message ":resize required (${active_percentage}%) | h:${resize_height} (active:${active_height}, min:${active_min_height}) | w:${resize_width} (active:${active_width}, min:${active_min_width}) | window h:${window_height} x w:${window_width}"
 
 panes=$(tmux list-panes -F "#{pane_index}-#{pane_left}-#{pane_top}-#{pane_right}-#{pane_bottom}-#{pane_active}" | sort -n)
 
