@@ -100,25 +100,53 @@ Describe 'check get_tmux_option'
 
   # option
   # default value
+  # mock result (-w)
+  # mock result (-g)
   # result (option value)
   Parameters
-    "@pane-focus-size" "50" "50"
-    "@pane-focus-direction" "+" "+"
+    "@pane-focus-enabled" "on" "on" "" "on"
+    "@pane-focus-enabled" "on" "" "on" "on"
+    "@pane-focus-enabled" "on" "" "" "on"
+    "@pane-focus-enabled" "on" "off" "" "off"
+    "@pane-focus-enabled" "on" "" "off" "off"
+
+    "@pane-focus-size" "50" "50" "" "50"
+    "@pane-focus-size" "50" "" "50" "50"
+    "@pane-focus-size" "50" "" "" "50"
+    "@pane-focus-size" "50" "60" "" "60"
+    "@pane-focus-size" "50" "" "60" "60"
+
+    "@pane-focus-direction" "+" "+" "" "+"
+    "@pane-focus-direction" "+" "" "+" "+"
+    "@pane-focus-direction" "+" "" "" "+"
+    "@pane-focus-direction" "+" "|" "" "|"
+    "@pane-focus-direction" "+" "" "|" "|"
+    "@pane-focus-direction" "+" "-" "" "-"
+    "@pane-focus-direction" "+" "" "-" "-"
   End
 
   set_tmux_option() {
     echo "" > /dev/null
   }
 
+  tmux() {
+    local sub_command="${1}"
+    local flags="${2}"
+
+    if [[ "${sub_command}" == "show-options" ]]; then
+      if [[ "${flags}" == "-wqv" ]]; then
+        echo "${window_val}"
+      elif [[ "${flags}" == "-gqv" ]]; then
+        echo "${global_val}"
+      fi
+    fi
+  }
+
   It 'returns set value or default'
-    shellspec_mock tmux show-options -wqv <<-EOF
-echo "${2}"
-EOF
-    shellspec_mock tmux show-options -gqv <<-EOF
-echo "${2}"
-EOF
+    export -a window_val="${3}"
+    export -a global_val="${4}"
 
     When call get_tmux_option "${1}" "${2}"
-    The output should eq "${3}"
+    The output should eq "${5}"
   End
 End
