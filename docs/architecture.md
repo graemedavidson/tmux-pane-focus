@@ -6,7 +6,22 @@ pane calculated and then updated. If the active pane is greater than the calcula
 
 The plugin makes use of the tmux API to modify tmux state. Review tmux man page or [online documentation](http://man.openbsd.org/OpenBSD-current/man1/tmux.1)
 
-## Ordering
+## Glossary
+
+- row: horizontal set of panes in which the active pane sits.
+- col/column: vertical set of panes in which the active pane sits.
+- height: integer value for window or pane.
+- width: integer value for window or pane.
+- horizontal splits `_`: the number of splits separating panes top to bottom.
+- vertical splits `|`: the number of splits separating panes left to right.
+- window: A window within a tmux session containing panes
+- pane: a individual command prompt within a window
+- pane sides: integer value for position within grid (top, bottom, left, and right)
+- axis: y representing height and, x representing width
+
+Plugin refers to the x plane as `row` and the y plane as `column` within the code.
+
+## Change Ordering
 
 Currently configured to change size of height then width.
 
@@ -14,10 +29,10 @@ Currently configured to change size of height then width.
 
 Plugin determines the number of panes at start.
 
-if 1 pane, no resize required, automatically quit out.
+if 1 pane, quit.
 
 Currently no upper limit on panes defined, considering changes as resolving complicated layouts with several panes leads
-to less desirable results.
+to more erroneous results.
 
 ## Active Pane
 
@@ -28,9 +43,7 @@ accordingly. Design intended to leave inactive panes legible where possible.
 ## Rows and Columns
 
 Plugin optimised to determine all panes sitting on the x and y planes of the active pane. Therefore all inactive panes
-outside of the active pane not resized. Plugin accounts for overlapping panes.
-
-Plugin refers to the x plane as `row` and the y plane as `column` within the code.
+outside of the active pane not resized to reduce plugin operations. Plugin accounts for overlapping panes.
 
 The following examples show each inactive pane found in the column and row of the active pane.
 
@@ -60,6 +73,20 @@ the start diagram.
 |       |-------|            |    |----------|               |           |---|
 |       | 4     |            |    | 4        |               |           | 4 |
  ---------------              ---------------                 ---------------
+```
+
+Plugin determines parent panes by maintaining a stack and pushing when greater value of left or top and pushing when lower
+value of left or top. This matches the internal tmux index ordering which moves left to write then top down, so in the
+below example pane 3 sits under pane 2, not to the right of it.
+
+```
+ ---------------
+| 0     | 1     |
+|       |-------|
+|       | 2 | 4 |
+|       |-------|
+|       | 3 | 5 |
+ ---------------
 ```
 
 To account for this parent panes have a multiplier value calculated for each child pane and children with same

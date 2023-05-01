@@ -16,6 +16,12 @@ On focusing on another pane the hook `after-select-pane` calls the focus script.
 
 ### Tmux Plugin Manager
 
+Add plugin GitHub url to list of tpm plugins. Specify tag/branch for specific version.
+
+```
+set -g @plugin 'graemedavidson/tmux-pane-focus'
+# set -g @plugin 'graemedavidson/tmux-pane-focus#tag'
+```
 
 ### Manual
 
@@ -28,6 +34,12 @@ run-shell '~/.tmux/plugins/tmux-pane-focus/focus.tmux'
 ```
 
 ## Configuration
+
+Enable/Disable plugin:
+
+```
+set -g @pane-focus-size on
+```
 
 Add configuration to the `.tmux.conf` file to override the following defaults:
 
