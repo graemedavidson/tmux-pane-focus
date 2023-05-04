@@ -2,7 +2,22 @@
 
 [![codecov](https://codecov.io/gh/graemedavidson/tmux-pane-focus/branch/main/graph/badge.svg?token=2ULOAGT6BT)](https://codecov.io/gh/graemedavidson/tmux-pane-focus)
 
-Tmux plugin to auto resize panes on focus similar to [nvim Focus](https://github.com/beauwilliams/focus.nvim).
+Tmux plugin to auto resize panes on focus similar to [nvim Focus](https://github.com/beauwilliams/focus.nvim). On focusing
+on another pane the hook `after-select-pane` calls the focus script.
+
+Auto resize size set for all windows in the `.tmux.conf` file. Limited value between 50 and 99.
+
+```conf
+set -g @pane-focus-size '50'
+```
+
+Change size setting per session by activating menu with tmux shortcut: `ctrl-a T`.
+
+Add current active size to status bar:
+
+```conf
+set -g status-right '#[fg=colour255,bg=colour237][#{@pane-focus-size}]#[fg=default,bg=default]'
+```
 
 ## Installation
 
@@ -46,6 +61,7 @@ Create and move between new panes:
 | `ctrl-a |`                | Create vertical pane
 | `ctrl-a -`                | Create horizontal pane
 | `ctrl-a <DIRECTION_KEY>`  | Move between panes
+| `ctrl-a T`                | Pane Focus menu to change percentage for active pane
 
 ### Shellspec Tests
 

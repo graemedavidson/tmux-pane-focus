@@ -9,6 +9,7 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
+    - .tmux.conf:/home/developer/.tmux.conf
     - .:/home/developer/.tmux/plugins/tmux-pane-focus
 
   tests:

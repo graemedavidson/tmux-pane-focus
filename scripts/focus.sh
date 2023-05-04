@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-# shellcheck source=scripts/functions.sh
+# Not working: shellcheck source=./scripts/functions.sh
+# shellcheck source=/dev/null
 . "${CURRENT_DIR}/functions.sh"
 
 PANE_COUNT=$(tmux list-panes | wc -l)
@@ -9,13 +10,31 @@ if [[ $PANE_COUNT -eq 1 ]]; then
   exit 0
 fi
 
+# Check session and then global (default in .tmux.conf), set session
+read -r ACTIVE_PERCENTAGE< <(tmux show-options -qv "@pane-focus-size")
+if [[ -z "${ACTIVE_PERCENTAGE}" ]]; then
+  read -r ACTIVE_PERCENTAGE< <(tmux show-options -gqv "@pane-focus-size")
+  if [[ -z "${ACTIVE_PERCENTAGE}" ]]; then
+    tmux set-option "@pane-focus-size" "50"
+  else
+    tmux set-option "@pane-focus-size" "${ACTIVE_PERCENTAGE}"
+  fi
+fi
+
+if [[ "${ACTIVE_PERCENTAGE}" == "off" ]]; then
+  exit
+elif [[ "${ACTIVE_PERCENTAGE}" -lt 50 ]] || [[ "${ACTIVE_PERCENTAGE}" -ge 100 ]]; then
+  tmux display-message "#[bg=red]Invalid @pane-focus-size setting in .tmux.conf file: ${ACTIVE_PERCENTAGE}; expected value between 50 and 100.#[bg=default]"
+  exit
+fi
+
 IFS=- read -r WINDOW_HEIGHT WINDOW_WIDTH < <(tmux list-windows -F "#{window_height}-#{window_width}" -f "#{m:1,#{window_active}}")
 
 read -r VERTICAL_SPLIT_COUNT< <(get_split_count "right")
 read -r HORIZONTAL_SPLIT_COUNT< <(get_split_count "bottom")
 
-IFS=- read -r ACTIVE_PANE_WIDTH_PERCENTAGE INACTIVE_PANE_SHARED_WIDTH_PERCENTAGE MIN_ACTIVE_WIDTH MIN_INACTIVE_WIDTH< <(get_settings "${VERTICAL_SPLIT_COUNT}" "${WINDOW_WIDTH}")
-IFS=- read -r ACTIVE_PANE_HEIGHT_PERCENTAGE INACTIVE_PANE_SHARED_HEIGHT_PERCENTAGE MIN_ACTIVE_HEIGHT MIN_INACTIVE_HEIGHT< <(get_settings "${HORIZONTAL_SPLIT_COUNT}" "${WINDOW_HEIGHT}")
+IFS=- read -r ACTIVE_PANE_WIDTH_PERCENTAGE INACTIVE_PANE_SHARED_WIDTH_PERCENTAGE MIN_ACTIVE_WIDTH MIN_INACTIVE_WIDTH< <(get_settings "${VERTICAL_SPLIT_COUNT}" "${WINDOW_WIDTH}" "${ACTIVE_PERCENTAGE}")
+IFS=- read -r ACTIVE_PANE_HEIGHT_PERCENTAGE INACTIVE_PANE_SHARED_HEIGHT_PERCENTAGE MIN_ACTIVE_HEIGHT MIN_INACTIVE_HEIGHT< <(get_settings "${HORIZONTAL_SPLIT_COUNT}" "${WINDOW_HEIGHT}" "${ACTIVE_PERCENTAGE}")
 
 IFS=- read -r resize_height resize_width< <(check_active_pane "${MIN_ACTIVE_HEIGHT}" "${MIN_ACTIVE_WIDTH}")
 if [[ "${resize_height}" == "false" ]] && [[ "${resize_width}" == "false" ]]; then
