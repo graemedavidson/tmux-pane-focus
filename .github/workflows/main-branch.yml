@@ -1,0 +1,33 @@
+---
+name: Main Merge
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+    - .github/dependabot.yml
+    - '*.md'
+    - '*.yaml'
+    - .gitignore
+    - LICENSE
+  pull_request:
+    branches: [main]
+    paths-ignore:
+    - .github/dependabot.yml
+    - '*.md'
+    - '*.yaml'
+    - .gitignore
+    - LICENSE
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    container:
+      image: shellspec/shellspec-debian:0.28.1
+      volumes:
+      - ${{ github.workspace }}:/src
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+    - name: Shellspec
+      run: shellspec -s bash

@@ -1,0 +1,44 @@
+---
+name: Bash Dev
+
+on:
+  push:
+    branches: ['**', '!main']
+    paths-ignore:
+    - .github/dependabot.yml
+    - '*.md'
+    - '*.yaml'
+    - .gitignore
+    - LICENSE
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Install kcov
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y bash git kcov
+
+    - name: Install Shellspec
+      run: |
+        cd /opt/
+        sudo git clone https://github.com/shellspec/shellspec.git
+        sudo ln -s /opt/shellspec/shellspec /usr/local/bin/shellspec
+
+    - name: Run shellspec with kcov
+      env:
+        SHELLSPEC_KCOV_OPTS: "--include-pattern=*.sh"
+      run: |
+        shellspec -s bash --kcov
+
+    - uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ./coverage/cobertura.xml
+        flags: unittests
+        fail_ci_if_error: true
+        verbose: true
