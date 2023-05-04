@@ -2,13 +2,21 @@
 
 [![codecov](https://codecov.io/gh/graemedavidson/tmux-pane-focus/branch/main/graph/badge.svg?token=2ULOAGT6BT)](https://codecov.io/gh/graemedavidson/tmux-pane-focus)
 
-Tmux plugin to auto resize panes on focus similar to [nvim Focus](https://github.com/beauwilliams/focus.nvim). On focusing
-on another pane the hook `after-select-pane` calls the focus script.
+Tmux plugin to auto resize panes on focus similar to [nvim Focus](https://github.com/beauwilliams/focus.nvim).
+On focusing on another pane the hook `after-select-pane` calls the focus script.
 
-Auto resize size set for all windows in the `.tmux.conf` file. Limited value between 50 and 99.
+Auto resize size and direction set for all windows in the `.tmux.conf` file and then overridden locally via the options
+menu.
+
+- Size: >=50, <100.
+- Direction:
+  - `+`: both
+  - `|`: vertical (width) changes only
+  - `-`: horizontal (height) changes only
 
 ```conf
 set -g @pane-focus-size '50'
+set -g @pane-focus-size '+'
 ```
 
 Change size setting per session by activating menu with tmux shortcut: `ctrl-a T`.
@@ -16,7 +24,7 @@ Change size setting per session by activating menu with tmux shortcut: `ctrl-a T
 Add current active size to status bar:
 
 ```conf
-set -g status-right '#[fg=colour255,bg=colour237][#{@pane-focus-size}]#[fg=default,bg=default]'
+set -g status-right '#[fg=colour255,bg=colour237][#{@pane-focus-direction}][#{@pane-focus-size}]#[fg=default,bg=default]'
 ```
 
 ## Installation
@@ -33,16 +41,16 @@ ToDo: review installing plugin via [Tmux Plugin Manager](https://github.com/tmux
 
 ## Architecture
 
-Currently plugin determines window and appropriate pane size for active and inactive and then resizes all panes on an plane.
-So resize panes top to bottom and left to right.
+Currently plugin determines window and appropriate pane size for active and inactive and then resizes all panes on an
+plane. So resize panes top to bottom and left to right.
 
-Plugin language is bash matching the majority of tmux plugins. Bash allows for portability but the language has limitations.
-Considerations to moving towards another scripting language for example python in pipeline.
+Plugin language is bash matching the majority of tmux plugins. Bash allows for portability but the language has
+limitations. Considerations to moving towards another scripting language for example python in pipeline.
 
 ## Local Development
 
-Local development leverages a basic docker compose and docker file setup. Setup should respond to changes made to the scripts
-without requiring restarts.
+Local development leverages a basic docker compose and docker file setup. Setup should respond to changes made to the
+scripts without requiring restarts.
 
 - [Docker Build File](./Dockerfile)
 - [Docker Compose](./docker-compose.yml)
