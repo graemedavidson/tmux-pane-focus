@@ -5,7 +5,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   build-essential=12.9ubuntu3 \
   ca-certificates=20211016ubuntu0.22.04.1 \
   fzf=0.29.0-1 \
-  git=1:2.34.1-1ubuntu1.8 \
+  git=1:2.34.1-1ubuntu1.9 \
   libevent-dev=2.1.12-stable-1build3 \
   libncurses-dev=6.3-2 \
   wget=1.21.2-2ubuntu1 \

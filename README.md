@@ -5,29 +5,25 @@
 Tmux plugin to auto resize panes on focus similar to [nvim Focus](https://github.com/beauwilliams/focus.nvim).
 On focusing on another pane the hook `after-select-pane` calls the focus script.
 
-Auto resize size and direction set for all windows in the `.tmux.conf` file and then overridden locally via the options
-menu.
-
 - Size: >=50, <100.
 - Direction:
   - `+`: both
-  - `|`: vertical (width) changes only
-  - `-`: horizontal (height) changes only
+  - `|`: width changes only
+  - `-`: height changes only
 
-```conf
-set -g @pane-focus-size '50'
-set -g @pane-focus-size '+'
-```
-
-Change size setting per session by activating menu with tmux shortcut: `ctrl-a T`.
-
-Add current active size to status bar:
-
-```conf
-set -g status-right '#[fg=colour255,bg=colour237][#{@pane-focus-direction}][#{@pane-focus-size}]#[fg=default,bg=default]'
-```
 
 ## Installation
+
+### Tmux Plugin Manager
+
+Add plugin GitHub url to list of tpm plugins. Specify tag/branch for specific version.
+
+```
+set -g @plugin 'graemedavidson/tmux-pane-focus'
+# set -g @plugin 'graemedavidson/tmux-pane-focus#tag'
+```
+
+### Manual
 
 Clone repo into tmux plugins dir.
 
@@ -37,74 +33,39 @@ Add run shell command to end of `.tmux.conf` file to activate plugin.
 run-shell '~/.tmux/plugins/tmux-pane-focus/focus.tmux'
 ```
 
-ToDo: review installing plugin via [Tmux Plugin Manager](https://github.com/tmux-plugins/tpm)
+## Configuration
 
-## Architecture
+Enable/Disable plugin:
 
-Currently plugin determines window and appropriate pane size for active and inactive and then resizes all panes on an
-plane. So resize panes top to bottom and left to right.
-
-Plugin language is bash matching the majority of tmux plugins. Bash allows for portability but the language has
-limitations. Considerations to moving towards another scripting language for example python in pipeline.
-
-## Local Development
-
-Local development leverages a basic docker compose and docker file setup. Setup should respond to changes made to the
-scripts without requiring restarts.
-
-- [Docker Build File](./Dockerfile)
-- [Docker Compose](./docker-compose.yml)
-
-Build the local image and run:
-
-```bash
-docker-compose build
-docker-compose run tmux
+```
+set -g @pane-focus-size on
 ```
 
-Create and move between new panes:
+Add configuration to the `.tmux.conf` file to override the following defaults:
 
-| Binding                   | Action
-| ---                       | ---
-| `ctrl-a |`                | Create vertical pane
-| `ctrl-a -`                | Create horizontal pane
-| `ctrl-a <DIRECTION_KEY>`  | Move between panes
-| `ctrl-a T`                | Pane Focus menu to change percentage for active pane
+- focus size:       `50%`
+- focus direction:  `+`
 
-### Shellspec Tests
-
-Unit tests included through [shellspec](https://shellspec.info/) within a [container](https://hub.docker.com/r/shellspec/shellspec-debian/tags).
-
-- [Tests](./spec/)
-
-```bash
-docker-compose run tests
-docker run -it --rm -v "$PWD:/src" --entrypoint bash shellspec/shellspec-debian:0.28.1
+```conf
+set -g @pane-focus-size '50'
+set -g @pane-focus-direction '+'
 ```
 
-### Tmux Setup
+### Settings Menu
 
-Tmux configured to use `ctrl-a` as well as other opinionated settings.
+The default and global settings can be overridden at the window level through an options menu.
 
-- [tmux config](./.tmux.conf)
+tmux shortcut: `ctrl-a T`.
 
-[Tmux Plugin Manager](https://github.com/tmux-plugins/tpm) included with automatic installation of
-[Tmux Sensible](https://github.com/tmux-plugins/tmux-sensible).
+### Status bar
 
-### Pre-Commit
+Add current active size and direction to status bar:
 
-[Pre-Commit](https://pre-commit.com/).
-
-- [./.pre-commit-config.yaml]
-
-Install pre-commit hooks:
-
-```bash
-pre-commit install
+```conf
+set -g status-right '#[fg=colour255,bg=colour237][#{@pane-focus-direction}][#{@pane-focus-size}]#[fg=default,bg=default]'
 ```
 
-Run against all files:
+## Known Issues
 
-```bash
-pre-commit run --all-files
-```
+- Changes to inactive pane impeded by other panes.
+  - Add example
