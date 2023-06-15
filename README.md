@@ -11,6 +11,9 @@ On focusing on another pane the hook `after-select-pane` calls the focus script.
   - `|`: width changes only
   - `-`: height changes only
 
+Plugin still in an alpha stage. Currently testing locally to confirm features and find bugs. A refactor is coming as
+currently not in a DRY state with a lack of naming clarity and commenting hindering contributing. Feel free to use
+though and open an issue or start a discussion.
 
 ## Installation
 

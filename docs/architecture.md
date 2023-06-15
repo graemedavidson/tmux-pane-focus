@@ -67,17 +67,17 @@ the start diagram.
 ```
 # start                      select pane 1 (increase)        select pane 0 (decrease)
  ---------------              ---------------                 ---------------
-| 0     | 1     |            | 0  | 1        |               | 0         | 1 |
-|       |-------|            |    |----------|               |           |---|
-|       | 2 | 3 |            |    | 2   | 3  |               |           |2|3|
-|       |-------|            |    |----------|               |           |---|
-|       | 4     |            |    | 4        |               |           | 4 |
+| 0       | 1   |            | 0  | 1        |               | 0       | 1   |
+|         |-----|            |    |----------|               |         |-----|
+|         | 2|3 |            |    | 2   | 3  |               |         | 2|3 |
+|         |-----|            |    |----------|               |         |-----|
+|         | 4   |            |    | 4        |               |         | 4   |
  ---------------              ---------------                 ---------------
 ```
 
-Plugin determines parent panes by maintaining a stack and pushing when greater value of left or top and pushing when lower
-value of left or top. This matches the internal tmux index ordering which moves left to write then top down, so in the
-below example pane 3 sits under pane 2, not to the right of it.
+Plugin determines parent panes by maintaining a stack and pushing when greater value of left or top and pushing when
+lower value of left or top. This matches the internal tmux index ordering which moves left to write then top down, so in
+the below example pane 3 sits under pane 2, not to the right of it.
 
 ```
  ---------------
@@ -90,7 +90,7 @@ below example pane 3 sits under pane 2, not to the right of it.
 ```
 
 To account for this parent panes have a multiplier value calculated for each child pane and children with same
-dimensions aren't added to the resize list. The following examples describe the expected feature.
+dimensions aren't added to the resize list. Below examples describe the expectations in greater detail.
 
 Parents determined for rows and columns separately.
 

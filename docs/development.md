@@ -18,15 +18,15 @@ Create and move between new panes:
 Binding actions:
 
 - `ctrl-a |`: Create vertical pane
-- `ctrl-a `: Create horizontal pane
+- `ctrl-a -`: Create horizontal pane
 - `ctrl-a <DIRECTION_KEY>`: Move between panes
-- `ctrl-a T`: Pane Focus menu to change percentage for active pane
+- `ctrl-a T`: plugin settings menu
 
 ## Shellspec Tests
 
 Unit tests included through [shellspec](https://shellspec.info/) within a [container](https://hub.docker.com/r/shellspec/shellspec-debian/tags).
 
-- [Tests](./spec/)
+- [Tests](../spec/)
 
 ```bash
 docker-compose run tests
@@ -37,7 +37,7 @@ docker run -it --rm -v "$PWD:/src" --entrypoint bash shellspec/shellspec-debian:
 
 Tmux configured to use `ctrl-a` as well as other opinionated settings.
 
-- [tmux config](./.tmux.conf)
+- [tmux config](../.tmux.conf)
 
 [Tmux Plugin Manager](https://github.com/tmux-plugins/tpm) included with automatic installation of
 [Tmux Sensible](https://github.com/tmux-plugins/tmux-sensible).
@@ -46,7 +46,7 @@ Tmux configured to use `ctrl-a` as well as other opinionated settings.
 
 [Pre-Commit](https://pre-commit.com/).
 
-- [./.pre-commit-config.yaml]
+- [.pre-commit-config.yaml](../.pre-commit-config.yaml)
 
 Install pre-commit hooks:
 
