@@ -1,9 +1,9 @@
 ---
-name: Main Merge
+name: Linting and Unit Tests
 
 on:
   push:
-    branches: [main]
+    branches: ['**']
     paths-ignore:
     - .github/dependabot.yml
     - '*.md'
@@ -63,6 +63,7 @@ jobs:
         shellspec -s bash --kcov
 
     - uses: codecov/codecov-action@v4
+      if: github.ref == 'refs/heads/main'
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: ./coverage/cobertura.xml
