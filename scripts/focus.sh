@@ -28,6 +28,12 @@ if [[ ! "${direction}" =~ (\+|\-|\|) ]]; then
   exit
 fi
 
+read -r debug< <(get_tmux_option "@pane-focus-debug-log" "false")
+if [[ ! "${debug}" =~ (true|false) ]]; then
+  tmux display-message "#[bg=red]Invalid @pane-focus-debug-log setting: ${debug}; expected value 'true', 'false'.#[bg=default]"
+  exit
+fi
+
 resize_height_setting=true
 resize_width_setting=true
 if [[ "${direction}" == "|" ]]; then
@@ -41,6 +47,15 @@ IFS=- read -r window_height window_width < <(tmux list-windows -F "#{window_heig
 IFS=- read -r active_pane_index resize_height resize_width active_min_height active_min_width active_top active_bottom active_left active_right _ _< <(get_active_pane "${window_height}" "${window_width}" "${active_percentage}")
 
 panes=$(tmux list-panes -F "#{pane_index}-#{pane_left}-#{pane_top}-#{pane_right}-#{pane_bottom}-#{pane_active}" | sort -n)
+
+if [[ "${debug}" = "true" ]] ; then
+  tmux display-message "#[bg=yellow]Debug logging enabled (/tmp/tmux-pane-focus.log).#[bg=default]"
+  write_debug_line "-------------------------------------" \
+    "active percentage: ${active_percentage}" \
+    "resize height: ${resize_height_setting}, resize width: ${resize_width_setting}, direction: ${direction}" \
+    "window height: ${window_height}, width: ${window_width}" \
+    "panes: [${panes[*]}]"
+fi
 
 if [[ "${resize_height}" == "true" ]] && [[ "${resize_height_setting}" == "true" ]]; then
   resize_height_panes=()
@@ -134,6 +149,22 @@ fi
 IFS=- read -r min_inactive_height< <(get_inactive_pane_size "${window_height}" "${active_percentage}" "${inactive_height_panes}")
 IFS=- read -r min_inactive_width< <(get_inactive_pane_size "${window_width}" "${active_percentage}" "${inactive_width_panes}")
 
+if [[ "${debug}" = "true" ]] ; then
+  write_debug_line "height:" \
+    "\tresize_height_panes: ${resize_height_panes[*]}" \
+    "\tinactive_height_parent_panes: ${inactive_height_parent_panes[*]}" \
+    "\tresize_height_panes: ${resize_height_panes[*]}" \
+    "\tinactive_height_parent_pane_count: ${inactive_height_parent_pane_count}" \
+    "\tinactive_height_panes (count): ${inactive_height_panes[*]}" \
+    "width:" \
+    "\tresize_width_panes: ${resize_width_panes[*]}" \
+    "\tinactive_width_parent_panes: ${inactive_width_parent_panes[*]}" \
+    "\tresize_width_panes: ${resize_width_panes[*]}" \
+    "\tinactive_width_parent_pane_count: ${inactive_width_parent_pane_count}" \
+    "\tinactive_width_panes (count): ${inactive_width_panes[*]}" \
+    "resize panes:"
+fi
+
 if [[ "${resize_height}" == "true" ]] && [[ "${resize_height_setting}" == "true" ]]; then
   for pane_index in "${resize_height_panes[@]}"; do
     if [[ "${pane_index}" -eq "${active_pane_index}" ]]; then
@@ -146,6 +177,9 @@ if [[ "${resize_height}" == "true" ]] && [[ "${resize_height_setting}" == "true"
       fi
     fi
     resize_pane "${pane_index}" "${resize_value}" 0
+    if [[ "${debug}" = "true" ]] ; then
+      write_debug_line  "\t- pane: ${pane_index} ${resize_value} 0"
+    fi
   done
 fi
 
@@ -161,5 +195,8 @@ if [[ "${resize_width}" == "true" ]] && [[ "${resize_width_setting}" == "true" ]
       fi
     fi
     resize_pane "${pane_index}" 0 "${resize_value}"
+    if [[ "${debug}" = "true" ]] ; then
+      write_debug_line  "\t- pane: ${pane_index} 0 ${resize_value}"
+    fi
   done
 fi
