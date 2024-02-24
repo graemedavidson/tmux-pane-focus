@@ -168,3 +168,16 @@ get_inactive_parent_pane_count() {
 
   echo "${count}"
 }
+
+# Write to temporary debug log file
+#
+# Parameter(s):
+# - messages (array): debug lines
+#
+write_debug_line() {
+  local messages=("$@")
+
+  for message in "${messages[@]}"; do
+    echo -e "${message}" >> /tmp/tmux-pane-focus.log
+  done
+}
