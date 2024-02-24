@@ -50,34 +50,34 @@ if [[ "${resize_height}" == "true" ]] && [[ "${resize_height_setting}" == "true"
   prev_bottom=0
   prev_left=0
   prev_index=0
-  if [[ "${resize_height}" == "true" ]]; then
-    for pane in ${panes}; do
-      IFS=- read -r index left top right bottom _< <(echo "${pane}")
-      inactive_height_parent_panes+=( ["${index}"]=0 )
 
-      read -r in_column< <(in_col_row "${left}" "${active_left}" "${right}" "${active_right}")
-      if [[ "${in_column}" == "false" ]]; then
-        continue
-      fi
-      resize_height_panes+=("${index}")
+  for pane in ${panes}; do
+    IFS=- read -r index left top right bottom _< <(echo "${pane}")
+    inactive_height_parent_panes+=( ["${index}"]=0 )
 
-      if [[ "${left}" -eq "${prev_top}" ]] && [[ "${bottom}" -eq "${prev_bottom}" ]]; then
-        unset "resize_height_panes[-1]"
-      elif [[ "${top}" -ge "${prev_top}" ]] && [[ "${bottom}" -le "${prev_bottom}" ]]; then
-        if [[ "${left}" -gt "${prev_left}" ]]; then
-          parents+=("${prev_index}")
-        elif [[ "${left}" -lt "${prev_left}" ]]; then
-          unset 'parents[-1]'
-        fi
-        ((inactive_width_parent_panes["${parents[-1]}"]=inactive_width_parent_panes["${parents[-1]}"]+1))
-      else
-        prev_top="${top}"
-        prev_bottom="${bottom}"
+    read -r in_column< <(in_col_row "${left}" "${active_left}" "${right}" "${active_right}")
+    if [[ "${in_column}" == "false" ]]; then
+      continue
+    fi
+    resize_height_panes+=("${index}")
+
+    if [[ "${left}" -eq "${prev_top}" ]] && [[ "${bottom}" -eq "${prev_bottom}" ]]; then
+      unset "resize_height_panes[-1]"
+    elif [[ "${top}" -ge "${prev_top}" ]] && [[ "${bottom}" -le "${prev_bottom}" ]]; then
+      if [[ "${left}" -gt "${prev_left}" ]]; then
+        parents+=("${prev_index}")
+      elif [[ "${left}" -lt "${prev_left}" ]]; then
+        unset 'parents[-1]'
       fi
+      # Update pane count for previous pane index
+      ((inactive_height_parent_panes["${parents[-1]}"]=inactive_height_parent_panes["${parents[-1]}"]+1))
+    else
       prev_top="${top}"
-      prev_index="${index}"
-    done
-  fi
+      prev_bottom="${bottom}"
+    fi
+    prev_top="${top}"
+    prev_index="${index}"
+  done
 fi
 
 if [[ "${resize_width}" == "true" ]] && [[ "${resize_width_setting}" == "true" ]]; then
@@ -89,48 +89,37 @@ if [[ "${resize_width}" == "true" ]] && [[ "${resize_width_setting}" == "true" ]
   prev_top=0
   prev_index=0
 
-  if [[ "${resize_width}" == "true" ]]; then
-    for pane in ${panes}; do
-      IFS=- read -r index left top right bottom _< <(echo "${pane}")
-      inactive_width_parent_panes+=( ["${index}"]=0 )
-      read -r in_row< <(in_col_row "${top}" "${active_top}" "${bottom}" "${active_bottom}")
-      if [[ "${in_row}" == "false" ]]; then
-        continue
-      fi
-      resize_width_panes+=("${index}")
+  for pane in ${panes}; do
+    IFS=- read -r index left top right bottom _< <(echo "${pane}")
+    inactive_width_parent_panes+=( ["${index}"]=0 )
+    read -r in_row< <(in_col_row "${top}" "${active_top}" "${bottom}" "${active_bottom}")
+    if [[ "${in_row}" == "false" ]]; then
+      continue
+    fi
+    resize_width_panes+=("${index}")
 
-      if [[ "${left}" -eq "${prev_left}" ]] && [[ "${right}" -eq "${prev_right}" ]]; then
-        unset "resize_width_panes[-1]"
-      elif [[ "${left}" -ge "${prev_left}" ]] && [[ "${right}" -le "${prev_right}" ]]; then
-        if [[ "${top}" -gt "${prev_top}" ]]; then
-          parents+=("${prev_index}")
-        elif [[ "${top}" -lt "${prev_top}" ]]; then
-          unset 'parents[-1]'
-        fi
-        ((inactive_width_parent_panes["${parents[-1]}"]=inactive_width_parent_panes["${parents[-1]}"]+1))
-      else
-        prev_left="${left}"
-        prev_right="${right}"
+    if [[ "${left}" -eq "${prev_left}" ]] && [[ "${right}" -eq "${prev_right}" ]]; then
+      unset "resize_width_panes[-1]"
+    elif [[ "${left}" -ge "${prev_left}" ]] && [[ "${right}" -le "${prev_right}" ]]; then
+      if [[ "${top}" -gt "${prev_top}" ]]; then
+        parents+=("${prev_index}")
+      elif [[ "${top}" -lt "${prev_top}" ]]; then
+        unset 'parents[-1]'
       fi
-      prev_top="${top}"
-      prev_index="${index}"
-    done
-  fi
+      # Update pane count for previous pane index
+      ((inactive_width_parent_panes["${parents[-1]}"]=inactive_width_parent_panes["${parents[-1]}"]+1))
+    else
+      prev_left="${left}"
+      prev_right="${right}"
+    fi
+    prev_top="${top}"
+    prev_index="${index}"
+  done
 fi
 
 # Count of parent panes
-inactive_height_parent_pane_count=0
-inactive_width_parent_pane_count=0
-for pane_index in "${!inactive_height_parent_panes[@]}"; do
-  if [[ "${inactive_height_parent_panes[${pane_index}]}" -gt 0 ]]; then
-    ((inactive_height_parent_pane_count=inactive_height_parent_pane_count+1))
-  fi
-done
-for pane_index in "${!inactive_width_parent_panes[@]}"; do
-  if [[ "${inactive_width_parent_panes[${pane_index}]}" -gt 0 ]]; then
-    ((inactive_width_parent_pane_count=inactive_width_parent_pane_count+1))
-  fi
-done
+read -r inactive_height_parent_pane_count< <(get_inactive_parent_pane_count "${inactive_height_parent_panes[@]}")
+read -r inactive_width_parent_pane_count< <(get_inactive_parent_pane_count "${inactive_width_parent_panes[@]}")
 
 # Remove active pane from count and parent panes from count
 inactive_height_panes="$(( ${#resize_height_panes[@]} - 1))"

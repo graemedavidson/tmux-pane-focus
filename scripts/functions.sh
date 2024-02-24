@@ -116,7 +116,7 @@ set_tmux_option() {
   tmux set-option -w "${option}" "${option_value}"
 }
 
-# determine if inactive pane inside boundaries of active pane col or row
+# Determine if inactive pane inside boundaries of active pane col or row
 #
 # Takes left and right values for determining column or top and bottom for row.
 #
@@ -145,4 +145,26 @@ in_col_row() {
   fi
 
   echo "${result}"
+}
+
+# Get count of inactive parent panes (panes with children)
+#
+# Returns a count of inactive parent panes (panes with children) that are not in the col/row of focused pane that also have child panes.
+#
+# Parameter(s):
+# - panes (list): list of panes
+#
+# Return(s):
+# - count (interger): Number of inactive parent panes.
+get_inactive_parent_pane_count() {
+  local panes=("$@")
+
+  local count=0
+  for pane_index in "${!panes[@]}"; do
+    if [[ "${panes[${pane_index}]}" -gt 0 ]]; then
+      ((count=count+1))
+    fi
+  done
+
+  echo "${count}"
 }

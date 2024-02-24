@@ -150,3 +150,26 @@ Describe 'check get_tmux_option'
     The output should eq "${5}"
   End
 End
+
+Describe 'check get_inactive_parent_pane_count'
+  Include scripts/functions.sh
+
+  Parameters
+    0 0
+    0 0 0 0
+    0 0 0 0 0 0 0 0 0 0 0
+    1 0 0 0 1 0 0 0 0 0 0
+    2 0 0 0 1 1 0 0 0 0 0
+    4 0 0 0 1 1 0 0 0 1 1
+  End
+
+  Describe "Functionality with parameter (result): $1 and array (test data): ${*:2}"
+    It 'returns count of inactive parent panes'
+      expected_result="$1"
+      array_values=("${@:2}")
+
+      When call get_inactive_parent_pane_count "${array_values[@]}"
+      The output should eq "${expected_result}"
+    End
+  End
+End
