@@ -67,8 +67,3 @@ Add current active size and direction to status bar:
 ```conf
 set -g status-right '#[fg=colour255,bg=colour237][#{@pane-focus-direction}][#{@pane-focus-size}]#[fg=default,bg=default]'
 ```
-
-## Known Issues
-
-- Changes to inactive pane impeded by other panes.
-  - Add example
