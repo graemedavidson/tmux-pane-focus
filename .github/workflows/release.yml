@@ -16,3 +16,5 @@ jobs:
     - name: Generate release notes
       run: |
         gh release create ${{github.ref_name}} --generate-notes --latest --notes "[Changelog](./CHANGELOG.md), [Documentation](./docs)"
+      env:
+        GH_TOKEN: ${{ github.token }}
