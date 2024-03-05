@@ -2,7 +2,10 @@
 https://keepachangelog.com/en/1.0.0/
 
 ## [v0.4.0-alpha] - 05/03/24
-**Unreleased**
+
+### Added
+
+- hook to resize when creating new panes within a window.
 
 ### Fixed
 

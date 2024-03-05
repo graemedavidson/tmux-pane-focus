@@ -3,7 +3,8 @@
 [![codecov](https://codecov.io/gh/graemedavidson/tmux-pane-focus/branch/main/graph/badge.svg?token=2ULOAGT6BT)](https://codecov.io/gh/graemedavidson/tmux-pane-focus)
 
 Tmux plugin to auto resize panes on focus similar to [nvim Focus](https://github.com/beauwilliams/focus.nvim).
-On focusing on another pane the hook `after-select-pane` calls the focus script.
+
+Utilises [tmux hooks](./docs/tmux.md#hooks) to react to the creation and selection of panes.
 
 - Size: >=50, <100.
 - Direction:
