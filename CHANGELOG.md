@@ -1,6 +1,13 @@
 # CHANGELOG
 https://keepachangelog.com/en/1.0.0/
 
+## [v0.4.0-alpha] - 05/03/24
+**Unreleased**
+
+### Fixed
+
+- debug log option using incorrect value when set in menu.
+
 ## [v0.3.0-alpha] - 25/02/24
 
 ### Added
