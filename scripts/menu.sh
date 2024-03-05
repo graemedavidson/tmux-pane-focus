@@ -8,7 +8,7 @@ current_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 read -r enabled< <(get_tmux_option "@pane-focus-enabled" "on")
 read -r active_percentage< <(get_tmux_option "@pane-focus-size" "50")
 read -r direction< <(get_tmux_option "@pane-focus-direction" "+")
-read -r debug< <(get_tmux_option "@pane-focus-debug-log" "off")
+read -r debug< <(get_tmux_option "@pane-focus-debug-log" "false")
 
 tmux display-menu -T "#[align=centre fg=green]Pane Focus Options" -x R -y P \
   "" \
