@@ -39,6 +39,13 @@ run-shell '~/.tmux/plugins/tmux-pane-focus/focus.tmux'
 
 ## Configuration
 
+Changes to configuration require a tmux config reload or new tmux session to pickup changes. Adding the following 
+configuration can simply the process for testing which also requires a restart to start using.
+
+```bash
+bind R source-file ~/.tmux.conf \; display-message "Config reloaded..."
+```
+
 Enable/Disable plugin:
 
 ```
