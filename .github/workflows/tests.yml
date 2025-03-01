@@ -64,7 +64,7 @@ jobs:
       run: |
         shellspec -s bash --kcov
 
-    - uses: codecov/codecov-action@v4
+    - uses: codecov/codecov-action@v5
       if: github.ref == 'refs/heads/main'
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
