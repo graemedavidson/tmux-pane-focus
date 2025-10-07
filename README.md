@@ -49,7 +49,7 @@ bind R source-file ~/.tmux.conf \; display-message "Config reloaded..."
 Enable/Disable plugin:
 
 ```
-set -g @pane-focus-size on
+set -g @pane-focus-enabled on
 ```
 
 Add configuration to the `.tmux.conf` file to override the following defaults:
