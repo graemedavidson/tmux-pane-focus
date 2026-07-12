@@ -58,7 +58,14 @@ get_inactive_pane_size() {
   echo "${min_inactive}"
 }
 
-# Resize a tmux pane by percentage
+# Pending resize-pane commands, applied together by flush_resize_panes()
+# as a single tmux invocation. Each pane previously got its own `tmux
+# resize-pane` subprocess, which tmux redraws the client after; on a
+# multi-pane layout that meant several partially-resized frames flashing
+# by before the final layout settled.
+RESIZE_PANE_ARGS=()
+
+# Queue a pane resize by percentage
 #
 # Parameter(s):
 # - pane_index (interger): unique id for tmux pane to be changed
@@ -69,13 +76,33 @@ resize_pane() {
   pane_height="${2}"
   pane_width="${3}"
 
+  local cmd=()
   if [[ ${pane_height} -gt 0 ]] && [[ ${pane_width} -gt 0 ]]; then
-    tmux resize-pane -t "${pane_index}" -y "${pane_height}" -x "${pane_width}"
+    cmd=("resize-pane" "-t" "${pane_index}" "-y" "${pane_height}" "-x" "${pane_width}")
   elif [[ $pane_height -gt 0 ]]; then
-    tmux resize-pane -t "${pane_index}" -y "${pane_height}"
+    cmd=("resize-pane" "-t" "${pane_index}" "-y" "${pane_height}")
   elif [[ $pane_width -gt 0 ]]; then
-    tmux resize-pane -t "${pane_index}" -x "${pane_width}"
+    cmd=("resize-pane" "-t" "${pane_index}" "-x" "${pane_width}")
+  else
+    return
   fi
+
+  if [[ ${#RESIZE_PANE_ARGS[@]} -gt 0 ]]; then
+    RESIZE_PANE_ARGS+=(";")
+  fi
+  RESIZE_PANE_ARGS+=("${cmd[@]}")
+}
+
+# Apply every resize queued by resize_pane() since the last flush, as one
+# tmux invocation so the client redraws once for the final layout instead
+# of once per pane.
+flush_resize_panes() {
+  if [[ ${#RESIZE_PANE_ARGS[@]} -eq 0 ]]; then
+    return
+  fi
+
+  tmux "${RESIZE_PANE_ARGS[@]}"
+  RESIZE_PANE_ARGS=()
 }
 
 # Get a tmux option value
