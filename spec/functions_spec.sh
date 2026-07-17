@@ -151,6 +151,59 @@ Describe 'check get_tmux_option'
   End
 End
 
+Describe 'check resize_pane'
+  Include scripts/functions.sh
+
+  # pane index
+  # pane height
+  # pane width
+  # result (queued arguments)
+  Parameters
+    0 10 0  "resize-pane -t 0 -y 10"
+    1 0 20  "resize-pane -t 1 -x 20"
+    2 10 20 "resize-pane -t 2 -y 10 -x 20"
+    3 0 0   ""
+  End
+
+  queue_single_resize() {
+    resize_pane "${1}" "${2}" "${3}"
+    echo "${RESIZE_PANE_ARGS[*]}"
+  }
+
+  It 'queues a resize-pane command instead of executing it'
+    When call queue_single_resize "${1}" "${2}" "${3}"
+    The output should eq "${4}"
+  End
+End
+
+Describe 'check flush_resize_panes'
+  Include scripts/functions.sh
+
+  tmux() {
+    echo "tmux $*"
+  }
+
+  queue_and_flush() {
+    resize_pane 0 10 0
+    resize_pane 1 0 20
+    resize_pane 2 0 0
+    flush_resize_panes
+    echo "queued after flush: ${#RESIZE_PANE_ARGS[@]}"
+  }
+
+  It 'applies queued resizes as a single tmux invocation and clears the queue'
+    When call queue_and_flush
+    The line 1 of output should eq "tmux resize-pane -t 0 -y 10 ; resize-pane -t 1 -x 20"
+    The line 2 of output should eq "queued after flush: 0"
+  End
+
+  It 'does not invoke tmux when nothing is queued'
+    When call flush_resize_panes
+    The status should be success
+    The output should eq ""
+  End
+End
+
 Describe 'check get_inactive_parent_pane_count'
   Include scripts/functions.sh
 

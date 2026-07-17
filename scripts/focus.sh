@@ -200,3 +200,5 @@ if [[ "${resize_width}" == "true" ]] && [[ "${resize_width_setting}" == "true" ]
     fi
   done
 fi
+
+flush_resize_panes
