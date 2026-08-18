@@ -12,6 +12,26 @@ services:
     - .tmux.conf:/home/developer/.tmux.conf
     - .:/home/developer/.tmux/plugins/tmux-pane-focus
 
+  record:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+    - .tmux.conf:/home/developer/.tmux.conf
+    - .:/home/developer/.tmux/plugins/tmux-pane-focus
+    entrypoint: ["/home/developer/.tmux/plugins/tmux-pane-focus/demo/demo.sh"]
+    tty: true
+
+  cast:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+    - .tmux.conf:/home/developer/.tmux.conf
+    - .:/home/developer/.tmux/plugins/tmux-pane-focus
+    - ./bin:/home/developer/bin
+    entrypoint: ["/home/developer/.tmux/plugins/tmux-pane-focus/demo/record.sh"]
+
   tests:
     image: shellspec/shellspec-debian:0.28.1
     volumes:

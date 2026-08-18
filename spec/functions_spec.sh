@@ -129,6 +129,7 @@ Describe 'check get_tmux_option'
     echo "" > /dev/null
   }
 
+  # shellcheck disable=SC2329 # called indirectly by get_tmux_option, sourced from scripts/functions.sh
   tmux() {
     local sub_command="${1}"
     local flags="${2}"

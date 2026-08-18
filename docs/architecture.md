@@ -12,7 +12,7 @@ The plugin makes use of the tmux API to modify tmux state. Review tmux man page 
 - col/column: vertical set of panes in which the active pane sits.
 - height: integer value for window or pane.
 - width: integer value for window or pane.
-- horizontal splits `_`: the number of splits separating panes top to bottom.
+- horizontal splits `-`: the number of splits separating panes top to bottom.
 - vertical splits `|`: the number of splits separating panes left to right.
 - window: A window within a tmux session containing panes
 - pane: a individual command prompt within a window
@@ -146,6 +146,11 @@ an index number. The plugin uses the index value internally for uniquely identif
 
 The ordering of changes is from top left to bottom right following the inbuilt [indexing](#indexes) of tmux.
 
+`resize_pane()` doesn't run `resize-pane` immediately — it queues each pane's command into an array.
+`flush_resize_panes()` applies every queued resize as a single `tmux` invocation (each command separated by `;`),
+once per run, after both dimensions have been processed. This means tmux redraws once for the final layout instead
+of once per pane, avoiding intermediate resize states flashing by on multi-pane layouts.
+
 ### Indexes
 
 The indexes of current panes shown with command:
@@ -170,6 +175,6 @@ limitations. Considerations to moving towards another scripting language for exa
 ## Global and Local variables
 
 Global variable accessed using the `-g` flag and within the context of this plugin provides access to the configuration
-set in the [tmux conf file](#configuration) used as default for all new sessions and windows. Global settings can be
-overridden per window with the [settings menu](#setting-menu). The menu uses the `-w` flag to set the option at the
-window level.
+set in the [tmux conf file](../README.md#configuration) used as default for all new sessions and windows. Global
+settings can be overridden per window with the [settings menu](../README.md#settings-menu). The menu uses the `-w`
+flag to set the option at the window level.
